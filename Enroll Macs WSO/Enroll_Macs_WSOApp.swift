@@ -175,7 +175,15 @@ enum LDAPResult {
 func fetchEmailFromLDAP(username: String, completion: @escaping (LDAPResult) -> Void) {
     guard let config = getAppConfig(),
           let ldapServer = config.ldapServer, !ldapServer.isEmpty,
+          let ldapBaseDN = config.ldapBaseDN, !ldapBaseDN.isEmpty,
           !username.isEmpty else {
+        completion(.error)
+        return
+    }
+
+    guard let bindPassword = keychain[KeychainKeys.sambaPassword.rawValue],
+          let bindUser = keychain[KeychainKeys.sambaUsername.rawValue],
+          !bindPassword.isEmpty, !bindUser.isEmpty else {
         completion(.error)
         return
     }
@@ -184,32 +192,62 @@ func fetchEmailFromLDAP(username: String, completion: @escaping (LDAPResult) -> 
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/ldapsearch")
         process.arguments = [
-            "-v",
-            "-x",
             "-H", ldapServer,
-            "-b", config.ldapBaseDN ?? "o=epfl,c=ch",
-            "uid=\(username)"
+            "-D", "INTRANET\\\(bindUser)",
+            "-w", bindPassword,
+            "-b", ldapBaseDN,
+            "(sAMAccountName=\(username))",
+            "cn", "mail"
         ]
 
         let pipe = Pipe()
+        let errorPipe = Pipe()
         process.standardOutput = pipe
-        process.standardError = Pipe()
+        process.standardError = errorPipe
 
         do {
             try process.run()
             process.waitUntilExit()
+
+            let exitCode = process.terminationStatus
             let data = pipe.fileHandleForReading.readDataToEndOfFile()
             let output = String(data: data, encoding: .utf8) ?? ""
+            let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+            let errorOutput = String(data: errorData, encoding: .utf8) ?? ""
 
-            // Vérifie si le compte existe (présence d'un dn: dans la réponse)
-            let hasEntry = output.components(separatedBy: "\n").contains { $0.lowercased().hasPrefix("dn:") && !$0.lowercased().hasPrefix("dn: ") == false || $0.lowercased().hasPrefix("dn:") }
+            // ldapsearch retourne 49 pour bind invalide, 255/-1 pour connexion impossible, etc.
+            // On considère uniquement le code 0 (succès) et 32 (no such object) comme non-erreurs techniques
+            //let technicalErrorCodes: [Int32] = [1, 2, 4, 7, 13, 32, 49, 51, 52, 64, 65, 80, 255, -1]
+            let isConnectionOrBindError =
+                exitCode != 0 &&
+                exitCode != 0 && // code 0 = succès
+                (
+                    // Bind échoué
+                    errorOutput.lowercased().contains("invalid credentials") ||
+                    errorOutput.lowercased().contains("ldap_bind") ||
+                    // Connexion impossible
+                    errorOutput.lowercased().contains("can't contact ldap server") ||
+                    errorOutput.lowercased().contains("connection refused") ||
+                    errorOutput.lowercased().contains("timed out") ||
+                    errorOutput.lowercased().contains("network is unreachable") ||
+                    // Sortie vide avec code non-zéro = erreur technique probable
+                    output.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                )
+
+            if isConnectionOrBindError {
+                DispatchQueue.main.async { completion(.error) }
+                return
+            }
+
+            let hasEntry = output
+                .components(separatedBy: "\n")
+                .contains { $0.lowercased().hasPrefix("dn:") }
 
             if !hasEntry {
                 DispatchQueue.main.async { completion(.notFound) }
                 return
             }
 
-            // Cherche l'attribut mail
             let email = output
                 .components(separatedBy: "\n")
                 .first(where: { $0.lowercased().hasPrefix("mail:") })
@@ -1611,13 +1649,13 @@ struct ConfigurationView: View {
             HStack {
                 Text("Serveur LDAP:")
                     .frame(width: 150, alignment: .leading)
-                TextField("Ex: ldaps://ldap.epfl.ch", text: $ldapServer)
+                TextField("Ex: ldap://epfl.ch:3268", text: $ldapServer)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
             }
             HStack {
                 Text("Base DN LDAP:")
                     .frame(width: 150, alignment: .leading)
-                TextField("Ex: o=epfl,c=ch", text: $ldapBaseDN)
+                TextField("Ex: dc=epfl,dc=ch", text: $ldapBaseDN)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
             }
             HStack {
