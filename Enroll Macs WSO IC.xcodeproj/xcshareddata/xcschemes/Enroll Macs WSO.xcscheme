@@ -16,9 +16,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "AFCB0F432CEB5CDD00E64EF9"
-               BuildableName = "Enroll Macs WSO.app"
-               BlueprintName = "Enroll Macs WSO"
-               ReferencedContainer = "container:Enroll Macs WSO.xcodeproj">
+               BuildableName = "Enroll Macs WSO IC.app"
+               BlueprintName = "Enroll Macs WSO IC"
+               ReferencedContainer = "container:Enroll Macs WSO IC.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -45,9 +45,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "AFCB0F432CEB5CDD00E64EF9"
-            BuildableName = "Enroll Macs WSO.app"
-            BlueprintName = "Enroll Macs WSO"
-            ReferencedContainer = "container:Enroll Macs WSO.xcodeproj">
+            BuildableName = "Enroll Macs WSO IC.app"
+            BlueprintName = "Enroll Macs WSO IC"
+            ReferencedContainer = "container:Enroll Macs WSO IC.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -62,9 +62,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "AFCB0F432CEB5CDD00E64EF9"
-            BuildableName = "Enroll Macs WSO.app"
-            BlueprintName = "Enroll Macs WSO"
-            ReferencedContainer = "container:Enroll Macs WSO.xcodeproj">
+            BuildableName = "Enroll Macs WSO IC.app"
+            BlueprintName = "Enroll Macs WSO IC"
+            ReferencedContainer = "container:Enroll Macs WSO IC.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
@@ -84,9 +84,9 @@
                   <BuildableReference
                      BuildableIdentifier = "primary"
                      BlueprintIdentifier = "AFCB0F432CEB5CDD00E64EF9"
-                     BuildableName = "Enroll Macs WSO.app"
-                     BlueprintName = "Enroll Macs WSO"
-                     ReferencedContainer = "container:Enroll Macs WSO.xcodeproj">
+                     BuildableName = "Enroll Macs WSO IC.app"
+                     BlueprintName = "Enroll Macs WSO IC"
+                     ReferencedContainer = "container:Enroll Macs WSO IC.xcodeproj">
                   </BuildableReference>
                </EnvironmentBuildable>
             </ActionContent>

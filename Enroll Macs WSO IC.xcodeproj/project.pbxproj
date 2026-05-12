@@ -19,7 +19,7 @@
 
 /* Begin PBXFileReference section */
 		AF269C322CF36C05007CB99D /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		AFCB0F442CEB5CDD00E64EF9 /* Enroll Macs WSO.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Enroll Macs WSO.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		AFCB0F442CEB5CDD00E64EF9 /* Enroll Macs WSO IC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Enroll Macs WSO IC.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -60,7 +60,7 @@
 		AFCB0F452CEB5CDD00E64EF9 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				AFCB0F442CEB5CDD00E64EF9 /* Enroll Macs WSO.app */,
+				AFCB0F442CEB5CDD00E64EF9 /* Enroll Macs WSO IC.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -68,9 +68,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		AFCB0F432CEB5CDD00E64EF9 /* Enroll Macs WSO */ = {
+		AFCB0F432CEB5CDD00E64EF9 /* Enroll Macs WSO IC */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = AFCB0F582CEB5CDE00E64EF9 /* Build configuration list for PBXNativeTarget "Enroll Macs WSO" */;
+			buildConfigurationList = AFCB0F582CEB5CDE00E64EF9 /* Build configuration list for PBXNativeTarget "Enroll Macs WSO IC" */;
 			buildPhases = (
 				AFCB0F402CEB5CDD00E64EF9 /* Sources */,
 				AFCB0F412CEB5CDD00E64EF9 /* Frameworks */,
@@ -83,7 +83,7 @@
 			fileSystemSynchronizedGroups = (
 				AFCB0F462CEB5CDD00E64EF9 /* Enroll Macs WSO */,
 			);
-			name = "Enroll Macs WSO";
+			name = "Enroll Macs WSO IC";
 			packageProductDependencies = (
 				AFCB0F7A2CEB629600E64EF9 /* KeychainAccess */,
 				AFCB0F7C2CEB62E600E64EF9 /* KeychainAccess */,
@@ -94,7 +94,7 @@
 				AF076ACD2CEB964F00C53C39 /* SMBClient */,
 			);
 			productName = "Enroll Macs WSO";
-			productReference = AFCB0F442CEB5CDD00E64EF9 /* Enroll Macs WSO.app */;
+			productReference = AFCB0F442CEB5CDD00E64EF9 /* Enroll Macs WSO IC.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -112,7 +112,7 @@
 					};
 				};
 			};
-			buildConfigurationList = AFCB0F3F2CEB5CDD00E64EF9 /* Build configuration list for PBXProject "Enroll Macs WSO" */;
+			buildConfigurationList = AFCB0F3F2CEB5CDD00E64EF9 /* Build configuration list for PBXProject "Enroll Macs WSO IC" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -130,7 +130,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				AFCB0F432CEB5CDD00E64EF9 /* Enroll Macs WSO */,
+				AFCB0F432CEB5CDD00E64EF9 /* Enroll Macs WSO IC */,
 			);
 		};
 /* End PBXProject section */
@@ -294,7 +294,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Affectation des machines dans WSO";
+				INFOPLIST_KEY_CFBundleDisplayName = "Faculté IC - Affectation des machines dans WSO";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -310,8 +310,8 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 6.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "ch.epfl.Enroll-Macs-WSO";
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "ch.epfl.Enroll-Macs-WSO-IC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = macosx;
@@ -339,7 +339,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Affectation des machines dans WSO";
+				INFOPLIST_KEY_CFBundleDisplayName = "Faculté IC - Affectation des machines dans WSO";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -355,8 +355,8 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 6.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "ch.epfl.Enroll-Macs-WSO";
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "ch.epfl.Enroll-Macs-WSO-IC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = macosx;
@@ -370,7 +370,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		AFCB0F3F2CEB5CDD00E64EF9 /* Build configuration list for PBXProject "Enroll Macs WSO" */ = {
+		AFCB0F3F2CEB5CDD00E64EF9 /* Build configuration list for PBXProject "Enroll Macs WSO IC" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AFCB0F562CEB5CDE00E64EF9 /* Debug */,
@@ -379,7 +379,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		AFCB0F582CEB5CDE00E64EF9 /* Build configuration list for PBXNativeTarget "Enroll Macs WSO" */ = {
+		AFCB0F582CEB5CDE00E64EF9 /* Build configuration list for PBXNativeTarget "Enroll Macs WSO IC" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AFCB0F592CEB5CDE00E64EF9 /* Debug */,
