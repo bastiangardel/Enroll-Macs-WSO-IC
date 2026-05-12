@@ -112,7 +112,7 @@
 					};
 				};
 			};
-			buildConfigurationList = AFCB0F3F2CEB5CDD00E64EF9 /* Build configuration list for PBXProject "Enroll Macs WSO" */;
+			buildConfigurationList = AFCB0F3F2CEB5CDD00E64EF9 /* Build configuration list for PBXProject "Enroll Macs WSO IC" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -294,7 +294,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Affectation des machines dans WSO";
+				INFOPLIST_KEY_CFBundleDisplayName = "Faculté IC - Affectation des machines dans WSO";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -339,7 +339,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Affectation des machines dans WSO";
+				INFOPLIST_KEY_CFBundleDisplayName = "Faculté IC - Affectation des machines dans WSO";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -370,7 +370,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		AFCB0F3F2CEB5CDD00E64EF9 /* Build configuration list for PBXProject "Enroll Macs WSO" */ = {
+		AFCB0F3F2CEB5CDD00E64EF9 /* Build configuration list for PBXProject "Enroll Macs WSO IC" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AFCB0F562CEB5CDE00E64EF9 /* Debug */,

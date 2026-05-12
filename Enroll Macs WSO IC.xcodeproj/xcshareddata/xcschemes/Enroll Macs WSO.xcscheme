@@ -18,7 +18,7 @@
                BlueprintIdentifier = "AFCB0F432CEB5CDD00E64EF9"
                BuildableName = "Enroll Macs WSO.app"
                BlueprintName = "Enroll Macs WSO"
-               ReferencedContainer = "container:Enroll Macs WSO.xcodeproj">
+               ReferencedContainer = "container:Enroll Macs WSO IC.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -47,7 +47,7 @@
             BlueprintIdentifier = "AFCB0F432CEB5CDD00E64EF9"
             BuildableName = "Enroll Macs WSO.app"
             BlueprintName = "Enroll Macs WSO"
-            ReferencedContainer = "container:Enroll Macs WSO.xcodeproj">
+            ReferencedContainer = "container:Enroll Macs WSO IC.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -64,7 +64,7 @@
             BlueprintIdentifier = "AFCB0F432CEB5CDD00E64EF9"
             BuildableName = "Enroll Macs WSO.app"
             BlueprintName = "Enroll Macs WSO"
-            ReferencedContainer = "container:Enroll Macs WSO.xcodeproj">
+            ReferencedContainer = "container:Enroll Macs WSO IC.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
@@ -86,7 +86,7 @@
                      BlueprintIdentifier = "AFCB0F432CEB5CDD00E64EF9"
                      BuildableName = "Enroll Macs WSO.app"
                      BlueprintName = "Enroll Macs WSO"
-                     ReferencedContainer = "container:Enroll Macs WSO.xcodeproj">
+                     ReferencedContainer = "container:Enroll Macs WSO IC.xcodeproj">
                   </BuildableReference>
                </EnvironmentBuildable>
             </ActionContent>
