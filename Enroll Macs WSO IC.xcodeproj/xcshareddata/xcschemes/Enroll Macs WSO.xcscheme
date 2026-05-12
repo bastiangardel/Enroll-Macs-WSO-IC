@@ -16,8 +16,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "AFCB0F432CEB5CDD00E64EF9"
-               BuildableName = "Enroll Macs WSO.app"
-               BlueprintName = "Enroll Macs WSO"
+               BuildableName = "Enroll Macs WSO IC.app"
+               BlueprintName = "Enroll Macs WSO IC"
                ReferencedContainer = "container:Enroll Macs WSO IC.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -45,8 +45,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "AFCB0F432CEB5CDD00E64EF9"
-            BuildableName = "Enroll Macs WSO.app"
-            BlueprintName = "Enroll Macs WSO"
+            BuildableName = "Enroll Macs WSO IC.app"
+            BlueprintName = "Enroll Macs WSO IC"
             ReferencedContainer = "container:Enroll Macs WSO IC.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -62,8 +62,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "AFCB0F432CEB5CDD00E64EF9"
-            BuildableName = "Enroll Macs WSO.app"
-            BlueprintName = "Enroll Macs WSO"
+            BuildableName = "Enroll Macs WSO IC.app"
+            BlueprintName = "Enroll Macs WSO IC"
             ReferencedContainer = "container:Enroll Macs WSO IC.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -84,8 +84,8 @@
                   <BuildableReference
                      BuildableIdentifier = "primary"
                      BlueprintIdentifier = "AFCB0F432CEB5CDD00E64EF9"
-                     BuildableName = "Enroll Macs WSO.app"
-                     BlueprintName = "Enroll Macs WSO"
+                     BuildableName = "Enroll Macs WSO IC.app"
+                     BlueprintName = "Enroll Macs WSO IC"
                      ReferencedContainer = "container:Enroll Macs WSO IC.xcodeproj">
                   </BuildableReference>
                </EnvironmentBuildable>

@@ -19,7 +19,7 @@
 
 /* Begin PBXFileReference section */
 		AF269C322CF36C05007CB99D /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		AFCB0F442CEB5CDD00E64EF9 /* Enroll Macs WSO.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Enroll Macs WSO.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		AFCB0F442CEB5CDD00E64EF9 /* Enroll Macs WSO IC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Enroll Macs WSO IC.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -60,7 +60,7 @@
 		AFCB0F452CEB5CDD00E64EF9 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				AFCB0F442CEB5CDD00E64EF9 /* Enroll Macs WSO.app */,
+				AFCB0F442CEB5CDD00E64EF9 /* Enroll Macs WSO IC.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -68,9 +68,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		AFCB0F432CEB5CDD00E64EF9 /* Enroll Macs WSO */ = {
+		AFCB0F432CEB5CDD00E64EF9 /* Enroll Macs WSO IC */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = AFCB0F582CEB5CDE00E64EF9 /* Build configuration list for PBXNativeTarget "Enroll Macs WSO" */;
+			buildConfigurationList = AFCB0F582CEB5CDE00E64EF9 /* Build configuration list for PBXNativeTarget "Enroll Macs WSO IC" */;
 			buildPhases = (
 				AFCB0F402CEB5CDD00E64EF9 /* Sources */,
 				AFCB0F412CEB5CDD00E64EF9 /* Frameworks */,
@@ -83,7 +83,7 @@
 			fileSystemSynchronizedGroups = (
 				AFCB0F462CEB5CDD00E64EF9 /* Enroll Macs WSO */,
 			);
-			name = "Enroll Macs WSO";
+			name = "Enroll Macs WSO IC";
 			packageProductDependencies = (
 				AFCB0F7A2CEB629600E64EF9 /* KeychainAccess */,
 				AFCB0F7C2CEB62E600E64EF9 /* KeychainAccess */,
@@ -94,7 +94,7 @@
 				AF076ACD2CEB964F00C53C39 /* SMBClient */,
 			);
 			productName = "Enroll Macs WSO";
-			productReference = AFCB0F442CEB5CDD00E64EF9 /* Enroll Macs WSO.app */;
+			productReference = AFCB0F442CEB5CDD00E64EF9 /* Enroll Macs WSO IC.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -130,7 +130,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				AFCB0F432CEB5CDD00E64EF9 /* Enroll Macs WSO */,
+				AFCB0F432CEB5CDD00E64EF9 /* Enroll Macs WSO IC */,
 			);
 		};
 /* End PBXProject section */
@@ -379,7 +379,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		AFCB0F582CEB5CDE00E64EF9 /* Build configuration list for PBXNativeTarget "Enroll Macs WSO" */ = {
+		AFCB0F582CEB5CDE00E64EF9 /* Build configuration list for PBXNativeTarget "Enroll Macs WSO IC" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AFCB0F592CEB5CDE00E64EF9 /* Debug */,
