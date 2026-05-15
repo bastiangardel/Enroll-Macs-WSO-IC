@@ -11,7 +11,6 @@
 		95F52E262FB717FF00406AB5 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = 95F52E252FB717FF00406AB5 /* KeychainAccess */; };
 		95F52E292FB71F5400406AB5 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = 95F52E282FB71F5400406AB5 /* KeychainAccess */; };
 		AF076ACE2CEB964F00C53C39 /* SMBClient in Frameworks */ = {isa = PBXBuildFile; productRef = AF076ACD2CEB964F00C53C39 /* SMBClient */; };
-		AF269C332CF36C05007CB99D /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = AF269C322CF36C05007CB99D /* README.md */; };
 		AFCB0F7B2CEB629600E64EF9 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = AFCB0F7A2CEB629600E64EF9 /* KeychainAccess */; };
 		AFCB0F802CEB630800E64EF9 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = AFCB0F7F2CEB630800E64EF9 /* KeychainAccess */; };
 		AFCB0F862CEB636B00E64EF9 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = AFCB0F852CEB636B00E64EF9 /* KeychainAccess */; };
@@ -22,9 +21,34 @@
 		AFCB0F442CEB5CDD00E64EF9 /* Enroll Macs WSO IC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Enroll Macs WSO IC.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		9504C6B82FB749D700598360 /* Exceptions for "Enroll Macs WSO" folder in "Enroll Macs WSO IC" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Documentations/CORE_DATA_CHECKLIST.md,
+				Documentations/FILES_TO_DELETE.md,
+				Documentations/FINAL_REPORT.md,
+				Documentations/INDEX.md,
+				Documentations/MACHINES_PERSISTENCE_README.md,
+				Documentations/MIGRATION_GUIDE.md,
+				Documentations/NEXT_STEPS.md,
+				Documentations/PROJECT_STRUCTURE.md,
+				Documentations/QUICK_START.md,
+				Documentations/README.md,
+				Documentations/START_HERE.md,
+				Documentations/SUMMARY.md,
+				Documentations/VISUAL_OVERVIEW.md,
+			);
+			target = AFCB0F432CEB5CDD00E64EF9 /* Enroll Macs WSO IC */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		AFCB0F462CEB5CDD00E64EF9 /* Enroll Macs WSO */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				9504C6B82FB749D700598360 /* Exceptions for "Enroll Macs WSO" folder in "Enroll Macs WSO IC" target */,
+			);
 			path = "Enroll Macs WSO";
 			sourceTree = "<group>";
 		};
@@ -140,7 +164,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AF269C332CF36C05007CB99D /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
