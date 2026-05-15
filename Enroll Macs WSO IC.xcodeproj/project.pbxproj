@@ -17,7 +17,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		AF269C322CF36C05007CB99D /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		AFCB0F442CEB5CDD00E64EF9 /* Enroll Macs WSO IC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Enroll Macs WSO IC.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -75,7 +74,6 @@
 		AFCB0F3B2CEB5CDD00E64EF9 = {
 			isa = PBXGroup;
 			children = (
-				AF269C322CF36C05007CB99D /* README.md */,
 				AFCB0F462CEB5CDD00E64EF9 /* Enroll Macs WSO */,
 				AFCB0F452CEB5CDD00E64EF9 /* Products */,
 			);

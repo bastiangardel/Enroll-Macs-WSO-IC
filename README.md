@@ -1,2 +1,0 @@
-#  Enroll Macs WSO
-
