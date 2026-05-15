@@ -118,9 +118,12 @@ L'application suit une architecture modulaire avec séparation claire des respon
 - **Partage Samba/SMB** : Pour le dépôt des fichiers d'enrôlement
 - **Workspace ONE** : Environnement WSO configuré
 
-### Dépendances
+### Dépendances Swift Packages
 
-- **SMBClient** : Framework Swift pour connexion Samba (Swift Package)
+L'application utilise les Swift Packages suivants :
+
+- **[KeychainAccess](https://github.com/kishikawakatsumi/KeychainAccess)** : Gestion sécurisée du Keychain macOS
+- **[SMBClient](https://github.com/kishikawakatsumi/SMBClient)** : Client Swift pour connexions Samba/SMB
 
 ---
 
@@ -141,17 +144,26 @@ open "Enroll Macs WSO.xcodeproj"
 
 ### 3. Installer les Dépendances
 
-Xcode devrait automatiquement télécharger **SMBClient** via Swift Package Manager.
+Xcode devrait automatiquement télécharger les Swift Packages via SPM (Swift Package Manager).
 
-Si nécessaire, ajoutez manuellement :
-- File → Add Packages...
-- URL : `https://github.com/Kitura/BlueSSLService.git` (si requis)
+Si nécessaire, ajoutez-les manuellement :
+
+1. **File** → **Add Packages...**
+2. Ajoutez les packages suivants :
+
+   **KeychainAccess** :
+   - URL : `https://github.com/kishikawakatsumi/KeychainAccess`
+   - Version : `4.2.2` ou supérieure
+
+   **SMBClient** :
+   - URL : `https://github.com/kishikawakatsumi/SMBClient`
+   - Version : Dernière version disponible
 
 ### 4. Configurer le Signing
 
 1. Sélectionnez le projet dans Xcode
 2. Sous **Signing & Capabilities**, configurez votre équipe de développement
-3. Assurez-vous que **Keychain Sharing** est activé
+3. Assurez-vous que **Keychain Sharing** est activé pour l'accès au Keychain
 
 ### 5. Build & Run
 
@@ -176,7 +188,7 @@ Au premier lancement, l'application affiche l'écran de configuration :
 2. **Connexion Samba** :
    - Chemin du partage (ex: `smb://serveur.domaine.ch/partage/enrollments`)
    - Nom d'utilisateur
-   - Mot de passe (stocké de manière sécurisée dans le Keychain)
+   - Mot de passe (stocké de manière sécurisée dans le Keychain via KeychainAccess)
 
 3. **Serveur LDAP** :
    - URL du serveur (ex: `ldap://ad.domaine.ch:3268`)
@@ -285,12 +297,14 @@ ldapsearch -H ldap://ad.domaine.ch:3268 \
 
 ### Sécurité Keychain
 
-Les credentials Samba sont stockés dans le Keychain macOS avec :
+Les credentials Samba sont stockés dans le Keychain macOS via **KeychainAccess** :
 
 - **Service** : `ch.domaine.EnrollMacsWSO.samba`
 - **Accounts** :
   - `sambaUsername`
   - `sambaPassword`
+
+Le framework KeychainAccess offre une API Swift moderne et sécurisée pour gérer les credentials sensibles.
 
 ---
 
@@ -300,7 +314,7 @@ Les credentials Samba sont stockés dans le Keychain macOS avec :
 
 ```
 Utilisateur → ConfigurationView → CoreDataService.saveConfiguration()
-                                 → KeychainService.set()
+                                 → KeychainService.set() (via KeychainAccess)
 ```
 
 ### 2. Ajout d'une Machine
@@ -336,7 +350,7 @@ Pour chaque machine:
         │   └─→ FileManager → ~/Downloads/TestStorage/{FriendlyName}.json
         │
         └─→ Sinon:
-            ├─→ KeychainService → get credentials
+            ├─→ KeychainService → get credentials (KeychainAccess)
             ├─→ SMBClient.login()
             ├─→ SMBClient.connectShare()
             ├─→ SMBClient.upload(filename.json)
@@ -390,21 +404,31 @@ Pour chaque machine, un fichier JSON individuel est créé avec le nom `{Friendl
 - **AppKit** : Interactions système macOS
 - **Metal** : Vérification du support graphique
 
-### Frameworks Tiers
+### Swift Packages (Frameworks Tiers)
 
-- **SMBClient** : Communication Samba/SMB
-  - GitHub : [Kitura SMBClient](https://github.com/Kitura/BlueSSLService)
+- **[KeychainAccess](https://github.com/kishikawakatsumi/KeychainAccess)** (v4.2.2+)
+  - Gestion sécurisée du Keychain macOS
+  - API Swift moderne et type-safe
+  - Support des items génériques et Internet passwords
+  - Auteur : Kishikawa Katsumi
+
+- **[SMBClient](https://github.com/kishikawakatsumi/SMBClient)**
+  - Client Swift pour protocole SMB/CIFS
+  - Communication avec partages Samba/SMB
+  - Support async/await natif
+  - Auteur : Kishikawa Katsumi
 
 ### Outils Système
 
 - **ldapsearch** : Requêtes LDAP (`/usr/bin/ldapsearch`)
-- **Keychain** : Stockage sécurisé des credentials
+- **Keychain Services** : API système pour stockage sécurisé
 
 ### Swift Features
 
 - **Async/Await** : Opérations asynchrones modernes
 - **Actors** : Sécurité des données concurrentes
 - **Swift Concurrency** : Gestion des tâches asynchrones
+- **Codable** : Sérialisation/désérialisation JSON
 
 ---
 
@@ -430,9 +454,9 @@ Enroll Macs WSO/
 │
 ├── ⚙️ Services/                               # Logique métier
 │   ├── ServicesCoreDataService.swift         # Persistance Core Data
-│   ├── ServicesKeychainService.swift         # Gestion Keychain
+│   ├── ServicesKeychainService.swift         # Gestion Keychain (KeychainAccess)
 │   ├── ServicesLDAPService.swift             # Requêtes LDAP
-│   └── ServicesSambaService.swift            # Upload Samba
+│   └── ServicesSambaService.swift            # Upload Samba (SMBClient)
 │
 ├── 🛠 Utilities/                              # Utilitaires
 │   ├── UtilitiesExtensions.swift             # Extensions Swift
@@ -445,7 +469,6 @@ Enroll Macs WSO/
 │   └── CoreDataAppConfig+CoreDataProperties.swift
 │
 └── 📚 Documentation/                          # Documentation projet
-    ├── README.md                             # Documentation technique
     ├── PROJECT_STRUCTURE.md                  # Architecture détaillée
     ├── MIGRATION_GUIDE.md                    # Guide de migration
     └── VISUAL_OVERVIEW.md                    # Vue d'ensemble visuelle
@@ -588,21 +611,24 @@ En **mode test** :
 
 ### Comment réinitialiser la configuration ?
 
+**Option 1 : Via l'interface**
+- Cliquez sur "Editer Config" et re-saisissez toutes les valeurs
+
+**Option 2 : Via Core Data**
 ```swift
-// Option 1 : Via l'interface
-// Cliquez sur "Editer Config" et re-saisissez toutes les valeurs
-
-// Option 2 : Via Core Data
 CoreDataService.shared.resetConfiguration()
-
-// Option 3 : Supprimer les données
-// Supprimez l'app et réinstallez
 ```
+
+**Option 3 : Supprimer les données**
+- Supprimez l'app et réinstallez
+- Les données Core Data et Keychain seront effacées
 
 ### Où sont stockées les données ?
 
 - **Configuration** : Core Data (`~/Library/Application Support/Enroll Macs WSO/`)
-- **Credentials Samba** : Keychain macOS (service: `ch.domaine.EnrollMacsWSO.samba`)
+- **Credentials Samba** : Keychain macOS via KeychainAccess
+  - Service: `ch.domaine.EnrollMacsWSO.samba`
+  - Accounts: `sambaUsername`, `sambaPassword`
 - **Machines en attente** : Core Data (JSON dans `AppConfig.machinesJSON`)
 - **Fichiers JSON générés** : 
   - Mode production → Partage Samba
@@ -617,7 +643,7 @@ Ce projet est distribué sous licence **MIT**.
 ```
 MIT License
 
-Copyright (c) 2026 [Votre Organisation]
+Copyright (c) 2026 Bastian Gardel
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -644,11 +670,19 @@ SOFTWARE.
 
 Développé avec ❤️ par **Bastian Gardel** - Mai 2026
 
-**Technologies utilisées** :
-- Apple SwiftUI
+### Technologies utilisées
+
+**Frameworks Apple** :
+- SwiftUI
 - Core Data
-- Keychain Services
-- SMBClient Framework
+- LocalAuthentication
+- AppKit
+
+**Swift Packages** :
+- [KeychainAccess](https://github.com/kishikawakatsumi/KeychainAccess) par Kishikawa Katsumi
+- [SMBClient](https://github.com/kishikawakatsumi/SMBClient) par Kishikawa Katsumi
+
+Un grand merci à **Kishikawa Katsumi** pour ses excellents frameworks open-source !
 
 ---
 
@@ -656,7 +690,7 @@ Développé avec ❤️ par **Bastian Gardel** - Mai 2026
 
 Pour toute question, bug report ou demande de fonctionnalité :
 
-- 📧 Email : [votre-email@domaine.ch]
+- 📧 Email : bastian.gardel@example.com
 - 🐛 Issues : [GitHub Issues](https://github.com/votre-organisation/enroll-macs-wso/issues)
 - 📖 Documentation : [Wiki](https://github.com/votre-organisation/enroll-macs-wso/wiki)
 
