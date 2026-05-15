@@ -7,14 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		95F52E232FB7175800406AB5 /* SMBClient in Frameworks */ = {isa = PBXBuildFile; productRef = 95F52E222FB7175800406AB5 /* SMBClient */; };
+		95F52E262FB717FF00406AB5 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = 95F52E252FB717FF00406AB5 /* KeychainAccess */; };
 		AF076ACE2CEB964F00C53C39 /* SMBClient in Frameworks */ = {isa = PBXBuildFile; productRef = AF076ACD2CEB964F00C53C39 /* SMBClient */; };
 		AF269C332CF36C05007CB99D /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = AF269C322CF36C05007CB99D /* README.md */; };
 		AFCB0F7B2CEB629600E64EF9 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = AFCB0F7A2CEB629600E64EF9 /* KeychainAccess */; };
-		AFCB0F7D2CEB62E600E64EF9 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = AFCB0F7C2CEB62E600E64EF9 /* KeychainAccess */; };
 		AFCB0F802CEB630800E64EF9 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = AFCB0F7F2CEB630800E64EF9 /* KeychainAccess */; };
-		AFCB0F832CEB633D00E64EF9 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = AFCB0F822CEB633D00E64EF9 /* KeychainAccess */; };
 		AFCB0F862CEB636B00E64EF9 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = AFCB0F852CEB636B00E64EF9 /* KeychainAccess */; };
-		AFCB0F892CEB63F700E64EF9 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = AFCB0F882CEB63F700E64EF9 /* KeychainAccess */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,13 +34,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AFCB0F832CEB633D00E64EF9 /* KeychainAccess in Frameworks */,
 				AF076ACE2CEB964F00C53C39 /* SMBClient in Frameworks */,
-				AFCB0F7D2CEB62E600E64EF9 /* KeychainAccess in Frameworks */,
-				AFCB0F892CEB63F700E64EF9 /* KeychainAccess in Frameworks */,
 				AFCB0F7B2CEB629600E64EF9 /* KeychainAccess in Frameworks */,
+				95F52E262FB717FF00406AB5 /* KeychainAccess in Frameworks */,
 				AFCB0F802CEB630800E64EF9 /* KeychainAccess in Frameworks */,
 				AFCB0F862CEB636B00E64EF9 /* KeychainAccess in Frameworks */,
+				95F52E232FB7175800406AB5 /* SMBClient in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -86,12 +84,11 @@
 			name = "Enroll Macs WSO IC";
 			packageProductDependencies = (
 				AFCB0F7A2CEB629600E64EF9 /* KeychainAccess */,
-				AFCB0F7C2CEB62E600E64EF9 /* KeychainAccess */,
 				AFCB0F7F2CEB630800E64EF9 /* KeychainAccess */,
-				AFCB0F822CEB633D00E64EF9 /* KeychainAccess */,
 				AFCB0F852CEB636B00E64EF9 /* KeychainAccess */,
-				AFCB0F882CEB63F700E64EF9 /* KeychainAccess */,
 				AF076ACD2CEB964F00C53C39 /* SMBClient */,
+				95F52E222FB7175800406AB5 /* SMBClient */,
+				95F52E252FB717FF00406AB5 /* KeychainAccess */,
 			);
 			productName = "Enroll Macs WSO";
 			productReference = AFCB0F442CEB5CDD00E64EF9 /* Enroll Macs WSO IC.app */;
@@ -122,8 +119,8 @@
 			mainGroup = AFCB0F3B2CEB5CDD00E64EF9;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				AFCB0F872CEB63F700E64EF9 /* XCLocalSwiftPackageReference "../KeychainAccess-4.2.2" */,
-				AF076ACC2CEB964F00C53C39 /* XCLocalSwiftPackageReference "../SMBClient-0.2.0" */,
+				95F52E212FB7175800406AB5 /* XCRemoteSwiftPackageReference "SMBClient" */,
+				95F52E242FB717FF00406AB5 /* XCLocalSwiftPackageReference "../KeychainAccess-4.2.2" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = AFCB0F452CEB5CDD00E64EF9 /* Products */;
@@ -391,17 +388,33 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		AF076ACC2CEB964F00C53C39 /* XCLocalSwiftPackageReference "../SMBClient-0.2.0" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = "../SMBClient-0.2.0";
-		};
-		AFCB0F872CEB63F700E64EF9 /* XCLocalSwiftPackageReference "../KeychainAccess-4.2.2" */ = {
+		95F52E242FB717FF00406AB5 /* XCLocalSwiftPackageReference "../KeychainAccess-4.2.2" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = "../KeychainAccess-4.2.2";
 		};
 /* End XCLocalSwiftPackageReference section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		95F52E212FB7175800406AB5 /* XCRemoteSwiftPackageReference "SMBClient" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kishikawakatsumi/SMBClient.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.3.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
+		95F52E222FB7175800406AB5 /* SMBClient */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 95F52E212FB7175800406AB5 /* XCRemoteSwiftPackageReference "SMBClient" */;
+			productName = SMBClient;
+		};
+		95F52E252FB717FF00406AB5 /* KeychainAccess */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = KeychainAccess;
+		};
 		AF076ACD2CEB964F00C53C39 /* SMBClient */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = SMBClient;
@@ -410,23 +423,11 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = KeychainAccess;
 		};
-		AFCB0F7C2CEB62E600E64EF9 /* KeychainAccess */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = KeychainAccess;
-		};
 		AFCB0F7F2CEB630800E64EF9 /* KeychainAccess */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = KeychainAccess;
 		};
-		AFCB0F822CEB633D00E64EF9 /* KeychainAccess */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = KeychainAccess;
-		};
 		AFCB0F852CEB636B00E64EF9 /* KeychainAccess */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = KeychainAccess;
-		};
-		AFCB0F882CEB63F700E64EF9 /* KeychainAccess */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = KeychainAccess;
 		};
