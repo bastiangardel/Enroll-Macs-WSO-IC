@@ -181,9 +181,9 @@ Product → Run (⌘R)
 Au premier lancement, l'application affiche l'écran de configuration :
 
 1. **Paramètres WSO** :
-   - Platform ID (ex: `1`)
-   - Ownership (ex: `Corporate`)
-   - Message Type (ex: `1`)
+   - Platform ID (ex: `10`)
+   - Ownership (ex: `C`)
+   - Message Type (ex: `-1`)
 
 2. **Connexion Samba** :
    - Chemin du partage (ex: `smb://serveur.domaine.ch/partage/enrollments`)
