@@ -690,9 +690,7 @@ Un grand merci à **Kishikawa Katsumi** pour ses excellents frameworks open-sour
 
 Pour toute question, bug report ou demande de fonctionnalité :
 
-- 📧 Email : bastian.gardel@example.com
-- 🐛 Issues : [GitHub Issues](https://github.com/votre-organisation/enroll-macs-wso/issues)
-- 📖 Documentation : [Wiki](https://github.com/votre-organisation/enroll-macs-wso/wiki)
+- 🐛 Issues : Ticket au Support 1234 de l'EPFL file WSO ou [GitHub Issues](https://github.com/bastiangardel/Enroll-Macs-WSO-IC/issues)
 
 ---
 
