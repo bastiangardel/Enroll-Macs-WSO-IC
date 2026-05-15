@@ -39,7 +39,7 @@ struct Machine: Identifiable, Codable {
     var ownership: String
     var Email: String
     var macEnrollmentProfile: String
-    var friendlyNamePrefix: String
+    //var friendlyNamePrefix: String
 
     enum CodingKeys: String, CodingKey {
         case endUserName = "EndUserName"
@@ -52,7 +52,7 @@ struct Machine: Identifiable, Codable {
         case ownership = "Ownership"
         case Email = "MailAddress"
         case macEnrollmentProfile = "MacEnrollmentProfile"
-        case friendlyNamePrefix = "FriendlyNamePrefix"
+        // friendlyNamePrefix n'est pas inclus dans le JSON
     }
 
     func toJSON() -> Data? {
@@ -616,7 +616,7 @@ struct MachineListView: View {
 
         for (index, machine) in machines.enumerated() {
             if let jsonData = machine.toJSON() {
-                let filename = "scx-\(machine.assetNumber).json"
+                let filename = "\(machine.friendlyName).json"
                 saveFileToSamba(filename: filename, content: jsonData) { success, message in
                     DispatchQueue.main.async {
                         if success {
@@ -704,7 +704,6 @@ struct DetailsMachineView: View {
         _locationGroupId = State(initialValue: machine.locationGroupId)
         _email = State(initialValue: machine.Email)
         _macEnrollmentProfile = State(initialValue: machine.macEnrollmentProfile)
-        _friendlyNamePrefix = State(initialValue: machine.friendlyNamePrefix)
     }
 
     var body: some View {
@@ -886,7 +885,6 @@ struct DetailsMachineView: View {
                         ownership: machine.ownership,
                         Email: email,
                         macEnrollmentProfile: macEnrollmentProfile,
-                        friendlyNamePrefix: friendlyNamePrefix
                     )
                     onSave(updated)
                     dismiss()
@@ -1174,7 +1172,6 @@ struct AddMachineView: View {
                         ownership: config?.ownership ?? "",
                         Email: email,
                         macEnrollmentProfile: macEnrollmentProfile,
-                        friendlyNamePrefix: friendlyNamePrefix
                     )
                     onAdd(newMachine)
                     dismiss()
