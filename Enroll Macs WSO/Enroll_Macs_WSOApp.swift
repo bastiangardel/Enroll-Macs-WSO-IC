@@ -173,6 +173,57 @@ func getMachineNamePrefixes() -> [MachineNamePrefix] {
     return prefixes
 }
 
+// MARK: - Machine Storage Helpers
+func saveMachinesToCoreData(_ machines: [Machine]) {
+    guard let config = getAppConfig() else { return }
+    
+    let encoder = JSONEncoder()
+    if let jsonData = try? encoder.encode(machines),
+       let jsonString = String(data: jsonData, encoding: .utf8) {
+        config.machinesJSON = jsonString
+        
+        let context = PersistenceController.shared.container.viewContext
+        do {
+            try context.save()
+            print("Machines sauvegardées avec succès dans Core Data")
+        } catch {
+            print("Erreur lors de la sauvegarde des machines: \(error)")
+        }
+    }
+}
+
+func loadMachinesFromCoreData() -> [Machine] {
+    guard let config = getAppConfig(),
+          let json = config.machinesJSON,
+          let data = json.data(using: .utf8) else {
+        return []
+    }
+    
+    let decoder = JSONDecoder()
+    do {
+        let machines = try decoder.decode([Machine].self, from: data)
+        print("Machines chargées avec succès depuis Core Data: \(machines.count)")
+        return machines
+    } catch {
+        print("Erreur lors du chargement des machines: \(error)")
+        return []
+    }
+}
+
+func clearMachinesFromCoreData() {
+    guard let config = getAppConfig() else { return }
+    
+    config.machinesJSON = nil
+    
+    let context = PersistenceController.shared.container.viewContext
+    do {
+        try context.save()
+        print("Liste des machines effacée de Core Data")
+    } catch {
+        print("Erreur lors de l'effacement des machines: \(error)")
+    }
+}
+
 // MARK: - LDAP Helper
 enum LDAPResult {
     case found(String)
@@ -345,6 +396,15 @@ struct MachineListView: View {
             .onAppear {
                 isTestMode = ConfigManager.shared.isTestMode
                 print(isTestMode)
+                
+                // Charger les machines sauvegardées
+                if machines.isEmpty {
+                    machines = loadMachinesFromCoreData()
+                    if !machines.isEmpty {
+                        sortMachines(by: sortKey)
+                        showStatusMessage("\(machines.count) machine(s) chargée(s) depuis la dernière session")
+                    }
+                }
             }
         VStack {
             if isProcessing {
@@ -378,7 +438,7 @@ struct MachineListView: View {
                     .onTapGesture { sortMachines(by: "friendlyName") }
                     
                     Divider()
-                        .frame(height: 24)
+                        .frame(width: 1, height: 24)
                         .background(Color.white.opacity(0.3))
 
                     HStack(spacing: 4) {
@@ -396,7 +456,7 @@ struct MachineListView: View {
                     .onTapGesture { sortMachines(by: "endUserName") }
                     
                     Divider()
-                        .frame(height: 24)
+                        .frame(width: 1, height: 24)
                         .background(Color.white.opacity(0.3))
 
                     HStack(spacing: 4) {
@@ -414,7 +474,7 @@ struct MachineListView: View {
                     .onTapGesture { sortMachines(by: "assetNumber") }
                     
                     Divider()
-                        .frame(height: 24)
+                        .frame(width: 1, height: 24)
                         .background(Color.white.opacity(0.3))
 
                     HStack(spacing: 4) {
@@ -431,11 +491,10 @@ struct MachineListView: View {
                         }
                     }
                     .frame(width: 160, alignment: .center)
-                    .padding(.horizontal, 4)
                     .onTapGesture { sortMachines(by: "locationGroupId") }
                     
                     Divider()
-                        .frame(height: 24)
+                        .frame(width: 1, height: 24)
                         .background(Color.white.opacity(0.3))
 
                     HStack(spacing: 4) {
@@ -453,7 +512,7 @@ struct MachineListView: View {
                     .onTapGesture { sortMachines(by: "serialNumber") }
                     
                     Divider()
-                        .frame(height: 24)
+                        .frame(width: 1, height: 24)
                         .background(Color.white.opacity(0.3))
 
                     HStack(spacing: 4) {
@@ -472,7 +531,6 @@ struct MachineListView: View {
                     
                     Spacer(minLength: 0)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.vertical, 10)
                 .padding(.horizontal, 8)
                 .background(
@@ -499,6 +557,7 @@ struct MachineListView: View {
                                     .frame(width: 180, alignment: .center)
                                 
                                 Divider()
+                                    .frame(width: 1)
                                     .background(Color.gray.opacity(0.3))
                                 
                                 Text(machine.endUserName)
@@ -508,6 +567,7 @@ struct MachineListView: View {
                                     .frame(width: 140, alignment: .center)
                                 
                                 Divider()
+                                    .frame(width: 1)
                                     .background(Color.gray.opacity(0.3))
                                 
                                 Text(machine.assetNumber)
@@ -517,6 +577,7 @@ struct MachineListView: View {
                                     .frame(width: 120, alignment: .center)
                                 
                                 Divider()
+                                    .frame(width: 1)
                                     .background(Color.gray.opacity(0.3))
                                 
                                 Text(String(machine.locationGroupId))
@@ -524,9 +585,9 @@ struct MachineListView: View {
                                     .lineLimit(1)
                                     .truncationMode(.tail)
                                     .frame(width: 160, alignment: .center)
-                                    .padding(.horizontal, 4)
                                 
                                 Divider()
+                                    .frame(width: 1)
                                     .background(Color.gray.opacity(0.3))
                                 
                                 Text(machine.serialNumber)
@@ -536,6 +597,7 @@ struct MachineListView: View {
                                     .frame(width: 140, alignment: .center)
                                 
                                 Divider()
+                                    .frame(width: 1)
                                     .background(Color.gray.opacity(0.3))
                                 
                                 Text(machine.macEnrollmentProfile)
@@ -543,6 +605,8 @@ struct MachineListView: View {
                                     .lineLimit(1)
                                     .truncationMode(.tail)
                                     .frame(width: 150, alignment: .center)
+                                
+                                Spacer(minLength: 0)
                             }
                             .padding(.vertical, 10)
                             .padding(.horizontal, 8)
@@ -580,6 +644,7 @@ struct MachineListView: View {
                                 }
                                 Button("Supprimer", role: .destructive) {
                                     machines.removeAll { $0.id == machine.id }
+                                    saveMachinesToCoreData(machines) // Sauvegarder après suppression
                                 }
                             }
                             
@@ -653,6 +718,7 @@ struct MachineListView: View {
         .sheet(isPresented: $showAddMachineView) {
             AddMachineView { newMachine in
                 machines.append(newMachine)
+                saveMachinesToCoreData(machines) // Sauvegarder automatiquement
                 showStatusMessage("Machine ajoutée avec succès !")
                 sortMachines(by: sortKey)
             }
@@ -665,6 +731,7 @@ struct MachineListView: View {
                let index = machines.firstIndex(where: { $0.id == selectedId }) {
                 DetailsMachineView(machine: machines[index]) { updatedMachine in
                     machines[index] = updatedMachine
+                    saveMachinesToCoreData(machines) // Sauvegarder automatiquement
                     showStatusMessage("Machine mise à jour avec succès !")
                     sortMachines(by: sortKey)
                 }
@@ -773,6 +840,13 @@ struct MachineListView: View {
                         if index == totalMachines - 1 {
                             isProcessing = false
                             machines = remainingMachines
+                            saveMachinesToCoreData(machines) // Sauvegarder les machines restantes
+                            
+                            // Si toutes les machines ont été envoyées, effacer de Core Data
+                            if machines.isEmpty {
+                                clearMachinesFromCoreData()
+                            }
+                            
                             showStatusMessage("\(successfullySent) fichier(s) enregistré(s) sur \(totalMachines).\n \(message)")
                         }
                     }
@@ -788,12 +862,14 @@ struct MachineListView: View {
             selectedMachines.contains(machine.id)
         }
         selectedMachines.removeAll()
+        saveMachinesToCoreData(machines) // Sauvegarder après suppression
         showStatusMessage("Machines sélectionnées supprimées.")
     }
 
     func deleteAllMachines() {
         machines.removeAll()
         selectedMachines.removeAll()
+        clearMachinesFromCoreData() // Effacer de Core Data
         showStatusMessage("Toutes les machines ont été supprimées.")
     }
 
