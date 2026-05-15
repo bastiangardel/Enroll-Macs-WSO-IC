@@ -75,6 +75,12 @@ struct EnrollmentProfile: Identifiable, Codable, Equatable {
     var name: String
 }
 
+// MARK: - Modèle Machine Name Prefix
+struct MachineNamePrefix: Identifiable, Codable, Equatable {
+    var id: UUID = UUID()
+    var prefix: String
+}
+
 // MARK: - Keychain Keys
 enum KeychainKeys: String {
     case sambaUsername = "SambaUsername"
@@ -92,7 +98,8 @@ func saveToCoreData(
     ldapServer: String,
     ldapBaseDN: String,
     organisationGroupsJSON: String? = nil,
-    enrollmentProfilesJSON: String? = nil
+    enrollmentProfilesJSON: String? = nil,
+    machineNamePrefixesJSON: String? = nil
 ) {
     let context = PersistenceController.shared.container.viewContext
     let config = AppConfig(context: context)
@@ -104,6 +111,7 @@ func saveToCoreData(
     config.ldapBaseDN = ldapBaseDN
     config.organisationGroupsJSON = organisationGroupsJSON
     config.enrollmentProfiles = enrollmentProfilesJSON
+    config.machineNamePrefixesJSON = machineNamePrefixesJSON
 
     do {
         try context.save()
@@ -141,7 +149,7 @@ func getAppConfig() -> AppConfig? {
 func getOrganisationGroups() -> [OrganisationGroup] {
     guard let config = getAppConfig(),
           let json = config.organisationGroupsJSON,
-          let data = json.data(using: .utf8),
+          let data = json.data(using: String.Encoding.utf8),
           let groups = try? JSONDecoder().decode([OrganisationGroup].self, from: data)
     else { return [] }
     return groups
@@ -151,10 +159,20 @@ func getOrganisationGroups() -> [OrganisationGroup] {
 func getEnrollmentProfiles() -> [EnrollmentProfile] {
     guard let config = getAppConfig(),
           let json = config.enrollmentProfiles,
-          let data = json.data(using: .utf8),
+          let data = json.data(using: String.Encoding.utf8),
           let profiles = try? JSONDecoder().decode([EnrollmentProfile].self, from: data)
     else { return [] }
     return profiles
+}
+
+// MARK: - Machine Name Prefixes Helpers
+func getMachineNamePrefixes() -> [MachineNamePrefix] {
+    guard let config = getAppConfig(),
+          let json = config.machineNamePrefixesJSON,
+          let data = json.data(using: String.Encoding.utf8),
+          let prefixes = try? JSONDecoder().decode([MachineNamePrefix].self, from: data)
+    else { return [] }
+    return prefixes
 }
 
 // MARK: - LDAP Helper
@@ -343,126 +361,249 @@ struct MachineListView: View {
                 }
             }
 
-            Spacer()
-                .frame(height: 20)
-
-            // Titre des colonnes
-            HStack {
-                Spacer()
-                    .frame(width: 20)
-                HStack(spacing: 4) {
-                    Text("Friendly Name")
-                        .font(.headline)
-                    if sortKey == "friendlyName" {
-                        Image(systemName: sortOrder == .ascending ? "arrow.down" : "arrow.up")
-                            .font(.caption)
-                            .foregroundColor(.gray)
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .onTapGesture { sortMachines(by: "friendlyName") }
-
-                HStack(spacing: 4) {
-                    Text("End User Name")
-                        .font(.headline)
-                    if sortKey == "endUserName" {
-                        Image(systemName: sortOrder == .ascending ? "arrow.down" : "arrow.up")
-                            .font(.caption)
-                            .foregroundColor(.gray)
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .onTapGesture { sortMachines(by: "endUserName") }
-
-                HStack(spacing: 4) {
-                    Text("Asset Number")
-                        .font(.headline)
-                    if sortKey == "assetNumber" {
-                        Image(systemName: sortOrder == .ascending ? "arrow.down" : "arrow.up")
-                            .font(.caption)
-                            .foregroundColor(.gray)
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .onTapGesture { sortMachines(by: "assetNumber") }
-
-                HStack(spacing: 4) {
-                    Text("Location Group ID")
-                        .font(.headline)
-                    if sortKey == "locationGroupId" {
-                        Image(systemName: sortOrder == .ascending ? "arrow.down" : "arrow.up")
-                            .font(.caption)
-                            .foregroundColor(.gray)
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .onTapGesture { sortMachines(by: "locationGroupId") }
-
-                HStack(spacing: 4) {
-                    Text("Serial Number")
-                        .font(.headline)
-                    if sortKey == "serialNumber" {
-                        Image(systemName: sortOrder == .ascending ? "arrow.down" : "arrow.up")
-                            .font(.caption)
-                            .foregroundColor(.gray)
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .onTapGesture { sortMachines(by: "serialNumber") }
-            }
-            .padding(.bottom, 5)
-
-            // Liste des machines
-            List {
-                ForEach(machines) { machine in
-                    HStack {
-                        Spacer()
-                            .frame(width: 20)
-                        Text(machine.friendlyName)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        Text(machine.endUserName)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        Text(machine.assetNumber)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        Text(String(machine.locationGroupId))
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        Text(machine.serialNumber)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    .padding(.vertical, 5)
-                    .background(selectedMachines.contains(machine.id) ? Color.blue.opacity(0.2) : Color.clear)
-                    .contentShape(Rectangle())
-                    .simultaneousGesture(
-                        TapGesture(count: 2).onEnded {
-                            if selectedMachines.isEmpty {
-                                selectedMachines.insert(machine.id)
-                            } else if selectedMachines.contains(machine.id) {
-                                selectedMachines.filter { $0 != machine.id }.forEach { selectedMachines.remove($0) }
-                            } else {
-                                selectedMachines.insert(machine.id)
-                                selectedMachines.filter { $0 != machine.id }.forEach { selectedMachines.remove($0) }
-                            }
-                            showDetailsMachine = true
+            // Tableau avec en-têtes et données
+            VStack(spacing: 0) {
+                // Titre des colonnes
+                HStack(spacing: 0) {
+                    HStack(spacing: 4) {
+                        Text("Nom de la machine")
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white)
+                        if sortKey == "friendlyName" {
+                            Image(systemName: sortOrder == .ascending ? "arrow.down" : "arrow.up")
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.8))
                         }
+                    }
+                    .frame(width: 180, alignment: .center)
+                    .onTapGesture { sortMachines(by: "friendlyName") }
+                    
+                    Divider()
+                        .frame(height: 24)
+                        .background(Color.white.opacity(0.3))
+
+                    HStack(spacing: 4) {
+                        Text("Username")
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white)
+                        if sortKey == "endUserName" {
+                            Image(systemName: sortOrder == .ascending ? "arrow.down" : "arrow.up")
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.8))
+                        }
+                    }
+                    .frame(width: 140, alignment: .center)
+                    .onTapGesture { sortMachines(by: "endUserName") }
+                    
+                    Divider()
+                        .frame(height: 24)
+                        .background(Color.white.opacity(0.3))
+
+                    HStack(spacing: 4) {
+                        Text("Asset Number")
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white)
+                        if sortKey == "assetNumber" {
+                            Image(systemName: sortOrder == .ascending ? "arrow.down" : "arrow.up")
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.8))
+                        }
+                    }
+                    .frame(width: 120, alignment: .center)
+                    .onTapGesture { sortMachines(by: "assetNumber") }
+                    
+                    Divider()
+                        .frame(height: 24)
+                        .background(Color.white.opacity(0.3))
+
+                    HStack(spacing: 4) {
+                        Text("Organisation Group ID")
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                        if sortKey == "locationGroupId" {
+                            Image(systemName: sortOrder == .ascending ? "arrow.down" : "arrow.up")
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.8))
+                        }
+                    }
+                    .frame(width: 160, alignment: .center)
+                    .padding(.horizontal, 4)
+                    .onTapGesture { sortMachines(by: "locationGroupId") }
+                    
+                    Divider()
+                        .frame(height: 24)
+                        .background(Color.white.opacity(0.3))
+
+                    HStack(spacing: 4) {
+                        Text("Serial Number")
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white)
+                        if sortKey == "serialNumber" {
+                            Image(systemName: sortOrder == .ascending ? "arrow.down" : "arrow.up")
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.8))
+                        }
+                    }
+                    .frame(width: 140, alignment: .center)
+                    .onTapGesture { sortMachines(by: "serialNumber") }
+                    
+                    Divider()
+                        .frame(height: 24)
+                        .background(Color.white.opacity(0.3))
+
+                    HStack(spacing: 4) {
+                        Text("Enrollment Profile")
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white)
+                        if sortKey == "macEnrollmentProfile" {
+                            Image(systemName: sortOrder == .ascending ? "arrow.down" : "arrow.up")
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.8))
+                        }
+                    }
+                    .frame(width: 150, alignment: .center)
+                    .onTapGesture { sortMachines(by: "macEnrollmentProfile") }
+                    
+                    Spacer(minLength: 0)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.vertical, 10)
+                .padding(.horizontal, 8)
+                .background(
+                    LinearGradient(
+                        gradient: Gradient(colors: [Color.gray.opacity(0.25), Color.gray.opacity(0.15)]),
+                        startPoint: .top,
+                        endPoint: .bottom
                     )
-                    .onTapGesture {
-                        if selectedMachines.contains(machine.id) {
-                            selectedMachines.remove(machine.id)
-                        } else {
-                            selectedMachines.insert(machine.id)
+                )
+                .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 2)
+                
+                Divider()
+                    .background(Color.gray.opacity(0.5))
+                
+                // Liste des machines avec ScrollView
+                ScrollView {
+                    LazyVStack(spacing: 0) {
+                        ForEach(Array(machines.enumerated()), id: \.element.id) { index, machine in
+                            HStack(spacing: 0) {
+                                Text(machine.friendlyName)
+                                    .font(.body)
+                                    .lineLimit(1)
+                                    .truncationMode(.tail)
+                                    .frame(width: 180, alignment: .center)
+                                
+                                Divider()
+                                    .background(Color.gray.opacity(0.3))
+                                
+                                Text(machine.endUserName)
+                                    .font(.body)
+                                    .lineLimit(1)
+                                    .truncationMode(.tail)
+                                    .frame(width: 140, alignment: .center)
+                                
+                                Divider()
+                                    .background(Color.gray.opacity(0.3))
+                                
+                                Text(machine.assetNumber)
+                                    .font(.body)
+                                    .lineLimit(1)
+                                    .truncationMode(.tail)
+                                    .frame(width: 120, alignment: .center)
+                                
+                                Divider()
+                                    .background(Color.gray.opacity(0.3))
+                                
+                                Text(String(machine.locationGroupId))
+                                    .font(.body)
+                                    .lineLimit(1)
+                                    .truncationMode(.tail)
+                                    .frame(width: 160, alignment: .center)
+                                    .padding(.horizontal, 4)
+                                
+                                Divider()
+                                    .background(Color.gray.opacity(0.3))
+                                
+                                Text(machine.serialNumber)
+                                    .font(.body)
+                                    .lineLimit(1)
+                                    .truncationMode(.tail)
+                                    .frame(width: 140, alignment: .center)
+                                
+                                Divider()
+                                    .background(Color.gray.opacity(0.3))
+                                
+                                Text(machine.macEnrollmentProfile)
+                                    .font(.body)
+                                    .lineLimit(1)
+                                    .truncationMode(.tail)
+                                    .frame(width: 150, alignment: .center)
+                            }
+                            .padding(.vertical, 10)
+                            .padding(.horizontal, 8)
+                            .background(
+                                selectedMachines.contains(machine.id) 
+                                    ? Color.blue.opacity(0.25)
+                                    : (index % 2 == 0 ? Color(NSColor.textBackgroundColor) : Color.gray.opacity(0.05))
+                            )
+                            .contentShape(Rectangle())
+                            .simultaneousGesture(
+                                TapGesture(count: 2).onEnded {
+                                    if selectedMachines.isEmpty {
+                                        selectedMachines.insert(machine.id)
+                                    } else if selectedMachines.contains(machine.id) {
+                                        selectedMachines.filter { $0 != machine.id }.forEach { selectedMachines.remove($0) }
+                                    } else {
+                                        selectedMachines.insert(machine.id)
+                                        selectedMachines.filter { $0 != machine.id }.forEach { selectedMachines.remove($0) }
+                                    }
+                                    showDetailsMachine = true
+                                }
+                            )
+                            .onTapGesture {
+                                if selectedMachines.contains(machine.id) {
+                                    selectedMachines.remove(machine.id)
+                                } else {
+                                    selectedMachines.insert(machine.id)
+                                }
+                            }
+                            .contextMenu {
+                                Button("Éditer") {
+                                    selectedMachines.removeAll()
+                                    selectedMachines.insert(machine.id)
+                                    showDetailsMachine = true
+                                }
+                                Button("Supprimer", role: .destructive) {
+                                    machines.removeAll { $0.id == machine.id }
+                                }
+                            }
+                            
+                            if index < machines.count - 1 {
+                                Divider()
+                                    .background(Color.gray.opacity(0.2))
+                            }
                         }
                     }
                 }
-                .onDelete(perform: deleteMachines)
                 .onAppear {
                     sortMachines(by: sortKey)
                 }
             }
-            .listStyle(DefaultListStyle())
+            .background(Color(NSColor.textBackgroundColor))
+            .cornerRadius(6)
+            .padding(.horizontal, 8)
 
             Text(statusMessage)
                 .foregroundColor(.red)
-                .padding()
+                .padding(.horizontal)
+                .padding(.vertical, 4)
 
             // Boutons d'action
             HStack {
@@ -517,7 +658,7 @@ struct MachineListView: View {
                 showStatusMessage("Machine ajoutée avec succès !")
                 sortMachines(by: sortKey)
             }
-            .frame(minWidth: 800, minHeight: 450)
+            .frame(minWidth: 750, idealHeight: 380, maxHeight: 450)
         }
         .sheet(isPresented: $showDetailsMachine, onDismiss: {
             selectedMachines.removeAll()
@@ -529,7 +670,7 @@ struct MachineListView: View {
                     showStatusMessage("Machine mise à jour avec succès !")
                     sortMachines(by: sortKey)
                 }
-                .frame(minWidth: 800, minHeight: 450)
+                .frame(minWidth: 750, idealHeight: 380, maxHeight: 450)
             }
         }
     }
@@ -563,6 +704,10 @@ struct MachineListView: View {
             machines.sort { sortOrder == .ascending ?
                 $0.serialNumber.localizedCaseInsensitiveCompare($1.serialNumber) == .orderedAscending :
                 $0.serialNumber.localizedCaseInsensitiveCompare($1.serialNumber) == .orderedDescending }
+        case "macEnrollmentProfile":
+            machines.sort { sortOrder == .ascending ?
+                $0.macEnrollmentProfile.localizedCaseInsensitiveCompare($1.macEnrollmentProfile) == .orderedAscending :
+                $0.macEnrollmentProfile.localizedCaseInsensitiveCompare($1.macEnrollmentProfile) == .orderedDescending }
         default:
             break
         }
@@ -640,16 +785,6 @@ struct MachineListView: View {
         }
     }
 
-    func deleteMachines(at offsets: IndexSet) {
-        for index in offsets {
-            let machine = machines[index]
-            if selectedMachines.contains(machine.id) {
-                selectedMachines.remove(machine.id)
-            }
-        }
-        machines.remove(atOffsets: offsets)
-    }
-
     func deleteSelectedMachines() {
         machines.removeAll { machine in
             selectedMachines.contains(machine.id)
@@ -692,8 +827,14 @@ struct DetailsMachineView: View {
     
     @State private var enrollmentProfiles: [EnrollmentProfile] = []
     @State private var selectedProfileId: UUID? = nil
+    
+    @State private var machineNamePrefixes: [MachineNamePrefix] = []
+    @State private var selectedPrefixId: UUID? = nil
 
-    private var friendlyName: String { "\(friendlyNamePrefix)-\(assetNumber)" }
+    private var friendlyName: String { 
+        let prefix = machineNamePrefixes.first(where: { $0.id == selectedPrefixId })?.prefix ?? friendlyNamePrefix
+        return "\(prefix)-\(assetNumber)" 
+    }
 
     init(machine: Machine, onSave: @escaping (Machine) -> Void) {
         self.machine = machine
@@ -707,10 +848,64 @@ struct DetailsMachineView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 15) {
+        VStack(alignment: .leading, spacing: 0) {
             VStack(spacing: 10) {
                 requiredField(label: "Username", text: $endUserName)
-                requiredField(label: "Préfixe Friendly Name", text: $friendlyNamePrefix)
+                
+                // Menu Préfixe de nom de machine
+                HStack {
+                    Text("Nom de la machine")
+                        .frame(width: 180, alignment: .leading)
+                        .foregroundColor(.primary)
+                    Text("*")
+                        .foregroundColor(.red)
+                    if machineNamePrefixes.isEmpty {
+                        Text("Aucun préfixe configuré")
+                            .foregroundColor(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    } else {
+                        Menu {
+                            Button("Sélectionner un préfixe…") {
+                                selectedPrefixId = nil
+                                friendlyNamePrefix = ""
+                            }
+                            Divider()
+                            ForEach(machineNamePrefixes) { prefix in
+                                Button(prefix.prefix) {
+                                    selectedPrefixId = prefix.id
+                                    friendlyNamePrefix = prefix.prefix
+                                }
+                            }
+                        } label: {
+                            HStack {
+                                if let selectedId = selectedPrefixId,
+                                   let selected = machineNamePrefixes.first(where: { $0.id == selectedId }) {
+                                    Text("\(selected.prefix)-\(assetNumber)")
+                                } else {
+                                    Text("Sélectionner un préfixe…")
+                                        .foregroundColor(.secondary)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.up.chevron.down")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color(NSColor.controlBackgroundColor))
+                            .cornerRadius(6)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    Spacer()
+                }
+                
                 requiredField(label: "Numéro d'inventaire", text: $assetNumber)
                 requiredField(label: "Numéro de série", text: $serialNumber)
 
@@ -869,8 +1064,7 @@ struct DetailsMachineView: View {
                 }
             }
             .padding(.horizontal)
-            
-            Spacer()
+            .padding(.top, 8)
             
             HStack {
                 Button("Enregistrer") {
@@ -906,12 +1100,14 @@ struct DetailsMachineView: View {
                 .buttonStyle(.bordered)
             }
             .frame(maxWidth: .infinity)
-            .padding()
+            .padding(.horizontal)
+            .padding(.top, 16)
+            .padding(.bottom, 8)
         }
-        .padding(.top)
         .onAppear {
             organisationGroups = getOrganisationGroups()
             enrollmentProfiles = getEnrollmentProfiles()
+            machineNamePrefixes = getMachineNamePrefixes()
             
             // Pré-sélectionner l'OG correspondant au locationGroupId courant
             if let matching = organisationGroups.first(where: { $0.groupId == machine.locationGroupId }) {
@@ -921,6 +1117,15 @@ struct DetailsMachineView: View {
             // Pré-sélectionner le profil correspondant
             if let matching = enrollmentProfiles.first(where: { $0.name == machine.macEnrollmentProfile }) {
                 selectedProfileId = matching.id
+            }
+            
+            // Pré-sélectionner le préfixe correspondant
+            // Extraire le préfixe du friendlyName existant
+            let components = machine.friendlyName.components(separatedBy: "-")
+            if let firstComponent = components.first,
+               let matching = machineNamePrefixes.first(where: { $0.prefix == firstComponent }) {
+                selectedPrefixId = matching.id
+                friendlyNamePrefix = matching.prefix
             }
         }
     }
@@ -989,14 +1194,74 @@ struct AddMachineView: View {
     
     @State private var enrollmentProfiles: [EnrollmentProfile] = []
     @State private var selectedProfileId: UUID? = nil
+    
+    @State private var machineNamePrefixes: [MachineNamePrefix] = []
+    @State private var selectedPrefixId: UUID? = nil
 
-    private var friendlyName: String { "\(friendlyNamePrefix)-\(assetNumber)" }
+    private var friendlyName: String { 
+        let prefix = machineNamePrefixes.first(where: { $0.id == selectedPrefixId })?.prefix ?? friendlyNamePrefix
+        return "\(prefix)-\(assetNumber)" 
+    }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 15) {
+        VStack(alignment: .leading, spacing: 0) {
             VStack(spacing: 10) {
                 requiredField(label: "Username", text: $endUserName)
-                requiredField(label: "Préfixe du nom de la machine", text: $friendlyNamePrefix)
+                
+                // Menu Préfixe de nom de machine
+                HStack {
+                    Text("Nom de la machine")
+                        .frame(width: 180, alignment: .leading)
+                        .foregroundColor(.primary)
+                    Text("*")
+                        .foregroundColor(.red)
+                    if machineNamePrefixes.isEmpty {
+                        Text("Aucun préfixe configuré")
+                            .foregroundColor(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    } else {
+                        Menu {
+                            Button("Sélectionner un préfixe…") {
+                                selectedPrefixId = nil
+                                friendlyNamePrefix = ""
+                            }
+                            Divider()
+                            ForEach(machineNamePrefixes) { prefix in
+                                Button(prefix.prefix) {
+                                    selectedPrefixId = prefix.id
+                                    friendlyNamePrefix = prefix.prefix
+                                }
+                            }
+                        } label: {
+                            HStack {
+                                if let selectedId = selectedPrefixId,
+                                   let selected = machineNamePrefixes.first(where: { $0.id == selectedId }) {
+                                    Text("\(selected.prefix)-\(assetNumber)")
+                                } else {
+                                    Text("Sélectionner un préfixe…")
+                                        .foregroundColor(.secondary)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.up.chevron.down")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color(NSColor.controlBackgroundColor))
+                            .cornerRadius(6)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    Spacer()
+                }
+                
                 requiredField(label: "Numéro d'inventaire", text: $assetNumber)
                 requiredField(label: "Numéro de série", text: $serialNumber)
 
@@ -1155,8 +1420,7 @@ struct AddMachineView: View {
                 }
             }
             .padding(.horizontal)
-            
-            Spacer()
+            .padding(.top, 8)
             
             HStack {
                 Button("Ajouter") {
@@ -1193,12 +1457,14 @@ struct AddMachineView: View {
                 .buttonStyle(.bordered)
             }
             .frame(maxWidth: .infinity)
-            .padding()
+            .padding(.horizontal)
+            .padding(.top, 16)
+            .padding(.bottom, 8)
         }
-        .padding(.top)
         .onAppear {
             organisationGroups = getOrganisationGroups()
             enrollmentProfiles = getEnrollmentProfiles()
+            machineNamePrefixes = getMachineNamePrefixes()
         }
     }
 
@@ -1265,213 +1531,291 @@ struct ConfigurationView: View {
     // Enrollment Profiles
     @State private var enrollmentProfiles: [EnrollmentProfile] = []
     @State private var newProfileName: String = ""
+    
+    // Machine Name Prefixes
+    @State private var machineNamePrefixes: [MachineNamePrefix] = []
+    @State private var newPrefixName: String = ""
 
     private var canSave: Bool {
-        !pID.isEmpty && !OShip.isEmpty && !MT.isEmpty && !sPath.isEmpty && !organisationGroups.isEmpty && !enrollmentProfiles.isEmpty
+        !pID.isEmpty && !OShip.isEmpty && !MT.isEmpty && !sPath.isEmpty && !organisationGroups.isEmpty && !enrollmentProfiles.isEmpty && !machineNamePrefixes.isEmpty
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
+        VStack(spacing: 0) {
+            // Zone défilante avec le contenu
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
 
-                // --- Paramètres généraux ---
-                Group {
-                    HStack {
-                        Text("Platform ID:")
-                            .frame(width: 200, alignment: .leading)
-                        TextField("Entrez le Platform ID", text: $pID)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                    }
-                    HStack {
-                        Text("Ownership:")
-                            .frame(width: 200, alignment: .leading)
-                        TextField("Entrez l'Ownership", text: $OShip)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                    }
-                    HStack {
-                        Text("Message Type:")
-                            .frame(width: 200, alignment: .leading)
-                        TextField("Entrez le Message Type", text: $MT)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                    }
-                    HStack {
-                        Text("Chemin Samba:")
-                            .frame(width: 200, alignment: .leading)
-                        TextField("Entrez le chemin Samba", text: $sPath)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                    }
-                    HStack {
-                        Text("Nom d'utilisateur Samba:")
-                            .frame(width: 200, alignment: .leading)
-                        TextField("Entrez le nom d'utilisateur Samba", text: $sUsername)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                    }
-                    HStack {
-                        Text("Mot de passe Samba:")
-                            .frame(width: 200, alignment: .leading)
-                        SecureField("Entrez le mot de passe Samba", text: $sPassword)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                    }
-                    HStack {
-                        Text("Serveur LDAP:")
-                            .frame(width: 200, alignment: .leading)
-                        TextField("Ex: ldap://epfl.ch:3268", text: $ldapServer)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                    }
-                    HStack {
-                        Text("Base DN LDAP:")
-                            .frame(width: 200, alignment: .leading)
-                        TextField("Ex: dc=epfl,dc=ch", text: $ldapBaseDN)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                    }
-                }
-
-                Divider()
-
-                // --- Groupes d'organisation ---
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack {
-                        Text("Groupes d'organisation")
-                            .font(.headline)
-                        Text("*")
-                            .foregroundColor(.red)
-                    }
-
-                    if organisationGroups.isEmpty {
-                        Text("Au moins un groupe d'organisation est requis.")
-                            .foregroundColor(.red)
-                            .font(.caption)
-                    }
-
-                    // En-tête du tableau
-                    if !organisationGroups.isEmpty {
+                    // --- Paramètres généraux ---
+                    Group {
                         HStack {
-                            Text("Nom")
-                                .font(.subheadline)
-                                .fontWeight(.semibold)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            Text("ID")
-                                .font(.subheadline)
-                                .fontWeight(.semibold)
-                                .frame(width: 120, alignment: .leading)
-                            Spacer().frame(width: 32)
+                            Text("Platform ID:")
+                                .frame(width: 200, alignment: .leading)
+                            TextField("Entrez le Platform ID", text: $pID)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
                         }
-                        .padding(.horizontal, 8)
+                        HStack {
+                            Text("Ownership:")
+                                .frame(width: 200, alignment: .leading)
+                            TextField("Entrez l'Ownership", text: $OShip)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                        }
+                        HStack {
+                            Text("Message Type:")
+                                .frame(width: 200, alignment: .leading)
+                            TextField("Entrez le Message Type", text: $MT)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                        }
+                        HStack {
+                            Text("Chemin Samba:")
+                                .frame(width: 200, alignment: .leading)
+                            TextField("Entrez le chemin Samba", text: $sPath)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                        }
+                        HStack {
+                            Text("Nom d'utilisateur Samba:")
+                                .frame(width: 200, alignment: .leading)
+                            TextField("Entrez le nom d'utilisateur Samba", text: $sUsername)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                        }
+                        HStack {
+                            Text("Mot de passe Samba:")
+                                .frame(width: 200, alignment: .leading)
+                            SecureField("Entrez le mot de passe Samba", text: $sPassword)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                        }
+                        HStack {
+                            Text("Serveur LDAP:")
+                                .frame(width: 200, alignment: .leading)
+                            TextField("Ex: ldap://epfl.ch:3268", text: $ldapServer)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                        }
+                        HStack {
+                            Text("Base DN LDAP:")
+                                .frame(width: 200, alignment: .leading)
+                            TextField("Ex: dc=epfl,dc=ch", text: $ldapBaseDN)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                        }
+                    }
 
-                        Divider()
+                    Divider()
 
-                        ForEach(organisationGroups) { og in
+                    // --- Groupes d'organisation ---
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            Text("Groupes d'organisation")
+                                .font(.headline)
+                            Text("*")
+                                .foregroundColor(.red)
+                        }
+
+                        if organisationGroups.isEmpty {
+                            Text("Au moins un groupe d'organisation est requis.")
+                                .foregroundColor(.red)
+                                .font(.caption)
+                        }
+
+                        // En-tête du tableau
+                        if !organisationGroups.isEmpty {
                             HStack {
-                                Text(og.name)
+                                Text("Nom")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
                                     .frame(maxWidth: .infinity, alignment: .leading)
-                                Text(og.groupId)
+                                Text("ID")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
                                     .frame(width: 120, alignment: .leading)
-                                    .foregroundColor(.secondary)
-                                Button(action: {
-                                    organisationGroups.removeAll { $0.id == og.id }
-                                }) {
-                                    Image(systemName: "trash")
-                                        .foregroundColor(.red)
-                                }
-                                .buttonStyle(.plain)
-                                .frame(width: 32)
+                                Spacer().frame(width: 32)
                             }
                             .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.gray.opacity(0.05))
-                            .cornerRadius(6)
+
+                            Divider()
+
+                            ForEach(organisationGroups) { og in
+                                HStack {
+                                    Text(og.name)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                    Text(og.groupId)
+                                        .frame(width: 120, alignment: .leading)
+                                        .foregroundColor(.secondary)
+                                    Button(action: {
+                                        organisationGroups.removeAll { $0.id == og.id }
+                                    }) {
+                                        Image(systemName: "trash")
+                                            .foregroundColor(.red)
+                                    }
+                                    .buttonStyle(.plain)
+                                    .frame(width: 32)
+                                }
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.gray.opacity(0.05))
+                                .cornerRadius(6)
+                            }
+                        }
+
+                        // Ligne d'ajout
+                        HStack(spacing: 8) {
+                            TextField("Nom du groupe", text: $newOGName)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                            TextField("ID (ex: 628)", text: $newOGGroupId)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .frame(width: 120)
+                            Button("Ajouter") {
+                                let og = OrganisationGroup(
+                                    name: newOGName.trimmingCharacters(in: .whitespaces),
+                                    groupId: newOGGroupId.trimmingCharacters(in: .whitespaces)
+                                )
+                                organisationGroups.append(og)
+                                newOGName = ""
+                                newOGGroupId = ""
+                            }
+                            .disabled(newOGName.trimmingCharacters(in: .whitespaces).isEmpty ||
+                                      newOGGroupId.trimmingCharacters(in: .whitespaces).isEmpty)
                         }
                     }
 
-                    // Ligne d'ajout
-                    HStack(spacing: 8) {
-                        TextField("Nom du groupe", text: $newOGName)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                        TextField("ID (ex: 628)", text: $newOGGroupId)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .frame(width: 120)
-                        Button("Ajouter") {
-                            let og = OrganisationGroup(
-                                name: newOGName.trimmingCharacters(in: .whitespaces),
-                                groupId: newOGGroupId.trimmingCharacters(in: .whitespaces)
-                            )
-                            organisationGroups.append(og)
-                            newOGName = ""
-                            newOGGroupId = ""
-                        }
-                        .disabled(newOGName.trimmingCharacters(in: .whitespaces).isEmpty ||
-                                  newOGGroupId.trimmingCharacters(in: .whitespaces).isEmpty)
-                    }
-                }
-
-                Divider()
-                
-                // --- Profils d'enrollment ---
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack {
-                        Text("Profils d'enrollment")
-                            .font(.headline)
-                        Text("*")
-                            .foregroundColor(.red)
-                    }
-
-                    if enrollmentProfiles.isEmpty {
-                        Text("Au moins un profil d'enrollment est requis.")
-                            .foregroundColor(.red)
-                            .font(.caption)
-                    }
-
-                    // En-tête du tableau
-                    if !enrollmentProfiles.isEmpty {
+                    Divider()
+                    
+                    // --- Profils d'enrollment ---
+                    VStack(alignment: .leading, spacing: 12) {
                         HStack {
-                            Text("Nom du profil")
-                                .font(.subheadline)
-                                .fontWeight(.semibold)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            Spacer().frame(width: 32)
+                            Text("Profils d'enrollment")
+                                .font(.headline)
+                            Text("*")
+                                .foregroundColor(.red)
                         }
-                        .padding(.horizontal, 8)
 
-                        Divider()
+                        if enrollmentProfiles.isEmpty {
+                            Text("Au moins un profil d'enrollment est requis.")
+                                .foregroundColor(.red)
+                                .font(.caption)
+                        }
 
-                        ForEach(enrollmentProfiles) { profile in
+                        // En-tête du tableau
+                        if !enrollmentProfiles.isEmpty {
                             HStack {
-                                Text(profile.name)
+                                Text("Nom du profil")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
                                     .frame(maxWidth: .infinity, alignment: .leading)
-                                Button(action: {
-                                    enrollmentProfiles.removeAll { $0.id == profile.id }
-                                }) {
-                                    Image(systemName: "trash")
-                                        .foregroundColor(.red)
-                                }
-                                .buttonStyle(.plain)
-                                .frame(width: 32)
+                                Spacer().frame(width: 32)
                             }
                             .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.gray.opacity(0.05))
-                            .cornerRadius(6)
+
+                            Divider()
+
+                            ForEach(enrollmentProfiles) { profile in
+                                HStack {
+                                    Text(profile.name)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                    Button(action: {
+                                        enrollmentProfiles.removeAll { $0.id == profile.id }
+                                    }) {
+                                        Image(systemName: "trash")
+                                            .foregroundColor(.red)
+                                    }
+                                    .buttonStyle(.plain)
+                                    .frame(width: 32)
+                                }
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.gray.opacity(0.05))
+                                .cornerRadius(6)
+                            }
+                        }
+
+                        // Ligne d'ajout
+                        HStack(spacing: 8) {
+                            TextField("Nom du profil", text: $newProfileName)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                            Button("Ajouter") {
+                                let profile = EnrollmentProfile(
+                                    name: newProfileName.trimmingCharacters(in: .whitespaces)
+                                )
+                                enrollmentProfiles.append(profile)
+                                newProfileName = ""
+                            }
+                            .disabled(newProfileName.trimmingCharacters(in: .whitespaces).isEmpty)
                         }
                     }
 
-                    // Ligne d'ajout
-                    HStack(spacing: 8) {
-                        TextField("Nom du profil", text: $newProfileName)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                        Button("Ajouter") {
-                            let profile = EnrollmentProfile(
-                                name: newProfileName.trimmingCharacters(in: .whitespaces)
-                            )
-                            enrollmentProfiles.append(profile)
-                            newProfileName = ""
+                    Divider()
+                    
+                    // --- Préfixes de noms de machines ---
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            Text("Préfixes de noms de machines")
+                                .font(.headline)
+                            Text("*")
+                                .foregroundColor(.red)
                         }
-                        .disabled(newProfileName.trimmingCharacters(in: .whitespaces).isEmpty)
+
+                        if machineNamePrefixes.isEmpty {
+                            Text("Au moins un préfixe est requis.")
+                                .foregroundColor(.red)
+                                .font(.caption)
+                        }
+
+                        // En-tête du tableau
+                        if !machineNamePrefixes.isEmpty {
+                            HStack {
+                                Text("Préfixe")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                Spacer().frame(width: 32)
+                            }
+                            .padding(.horizontal, 8)
+
+                            Divider()
+
+                            ForEach(machineNamePrefixes) { prefix in
+                                HStack {
+                                    Text(prefix.prefix)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                    Button(action: {
+                                        machineNamePrefixes.removeAll { $0.id == prefix.id }
+                                    }) {
+                                        Image(systemName: "trash")
+                                            .foregroundColor(.red)
+                                    }
+                                    .buttonStyle(.plain)
+                                    .frame(width: 32)
+                                }
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.gray.opacity(0.05))
+                                .cornerRadius(6)
+                            }
+                        }
+
+                        // Ligne d'ajout
+                        HStack(spacing: 8) {
+                            TextField("Préfixe (ex: MAC-EPFL)", text: $newPrefixName)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                            Button("Ajouter") {
+                                let prefix = MachineNamePrefix(
+                                    prefix: newPrefixName.trimmingCharacters(in: .whitespaces)
+                                )
+                                machineNamePrefixes.append(prefix)
+                                newPrefixName = ""
+                            }
+                            .disabled(newPrefixName.trimmingCharacters(in: .whitespaces).isEmpty)
+                        }
                     }
+
+                    Divider()
                 }
-
-                Divider()
-
-                // --- Boutons ---
+                .padding()
+            }
+            
+            // Séparateur visuel
+            Divider()
+            
+            // Zone fixe pour les boutons
+            VStack(spacing: 0) {
                 HStack {
                     Button("Enregistrer") {
                         saveConfiguration()
@@ -1497,7 +1841,7 @@ struct ConfigurationView: View {
                     .alert(isPresented: $showAlert) {
                         Alert(
                             title: Text("Confirmer la fermeture"),
-                            message: Text("La config est vide ou incomplète (au moins un groupe d'organisation et un profil d'enrollment requis), elle ne sera donc pas enregistrée.\nVoulez-vous vraiment quitter l'application ?"),
+                            message: Text("La config est vide ou incomplète (au moins un groupe d'organisation, un profil d'enrollment et un préfixe requis), elle ne sera donc pas enregistrée.\nVoulez-vous vraiment quitter l'application ?"),
                             primaryButton: .destructive(Text("Quitter")) {
                                 exit(0)
                             },
@@ -1505,8 +1849,10 @@ struct ConfigurationView: View {
                         )
                     }
                 }
+                .padding()
             }
-            .padding()
+            .frame(maxWidth: .infinity)
+            .background(Color(NSColor.windowBackgroundColor))
         }
         .onAppear(perform: loadConfiguration)
     }
@@ -1533,6 +1879,13 @@ struct ConfigurationView: View {
                let profiles = try? JSONDecoder().decode([EnrollmentProfile].self, from: data) {
                 enrollmentProfiles = profiles
             }
+            
+            // Charger les préfixes de noms de machines
+            if let json = config.machineNamePrefixesJSON,
+               let data = json.data(using: String.Encoding.utf8),
+               let prefixes = try? JSONDecoder().decode([MachineNamePrefix].self, from: data) {
+                machineNamePrefixes = prefixes
+            }
         }
         sUsername = keychain[KeychainKeys.sambaUsername.rawValue] ?? ""
         sPassword = keychain[KeychainKeys.sambaPassword.rawValue] ?? ""
@@ -1554,6 +1907,13 @@ struct ConfigurationView: View {
         } else {
             profilesJSON = nil
         }
+        
+        let prefixesJSON: String?
+        if let data = try? JSONEncoder().encode(machineNamePrefixes) {
+            prefixesJSON = String(data: data, encoding: .utf8)
+        } else {
+            prefixesJSON = nil
+        }
 
         saveToCoreData(
             platformId: Int(pID) ?? 0,
@@ -1563,7 +1923,8 @@ struct ConfigurationView: View {
             ldapServer: ldapServer,
             ldapBaseDN: ldapBaseDN,
             organisationGroupsJSON: ogJSON,
-            enrollmentProfilesJSON: profilesJSON
+            enrollmentProfilesJSON: profilesJSON,
+            machineNamePrefixesJSON: prefixesJSON
         )
         keychain[KeychainKeys.sambaUsername.rawValue] = sUsername
         keychain[KeychainKeys.sambaPassword.rawValue] = sPassword
@@ -1585,6 +1946,8 @@ struct ConfigurationView: View {
         newOGGroupId = ""
         enrollmentProfiles = []
         newProfileName = ""
+        machineNamePrefixes = []
+        newPrefixName = ""
     }
 }
 
@@ -1612,7 +1975,7 @@ struct Enroll_Macs_WSOApp: App {
     var body: some Scene {
         WindowGroup {
             MachineListView()
-                .frame(minWidth: 900, minHeight: 400)
+                .frame(minWidth: 1050, minHeight: 400)
         }
         .commandsRemoved()
         .commands {
@@ -1620,6 +1983,7 @@ struct Enroll_Macs_WSOApp: App {
             FileMenu()
             EditMenu()
         }
+        .defaultSize(width: 1050, height: 600)
     }
 }
 
