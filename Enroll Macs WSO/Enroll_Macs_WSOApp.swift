@@ -39,7 +39,6 @@ struct Machine: Identifiable, Codable {
     var ownership: String
     var Email: String
     var macEnrollmentProfile: String
-    //var friendlyNamePrefix: String
 
     enum CodingKeys: String, CodingKey {
         case endUserName = "EndUserName"
@@ -52,7 +51,6 @@ struct Machine: Identifiable, Codable {
         case ownership = "Ownership"
         case Email = "MailAddress"
         case macEnrollmentProfile = "MacEnrollmentProfile"
-        // friendlyNamePrefix n'est pas inclus dans le JSON
     }
 
     func toJSON() -> Data? {
