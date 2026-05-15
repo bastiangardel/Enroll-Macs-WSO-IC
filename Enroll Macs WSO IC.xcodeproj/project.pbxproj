@@ -10,6 +10,7 @@
 		95F52E232FB7175800406AB5 /* SMBClient in Frameworks */ = {isa = PBXBuildFile; productRef = 95F52E222FB7175800406AB5 /* SMBClient */; };
 		95F52E262FB717FF00406AB5 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = 95F52E252FB717FF00406AB5 /* KeychainAccess */; };
 		95F52E292FB71F5400406AB5 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = 95F52E282FB71F5400406AB5 /* KeychainAccess */; };
+		95F7187D2FB75C79004EAAC2 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 95F7187C2FB75C79004EAAC2 /* README.md */; };
 		AF076ACE2CEB964F00C53C39 /* SMBClient in Frameworks */ = {isa = PBXBuildFile; productRef = AF076ACD2CEB964F00C53C39 /* SMBClient */; };
 		AFCB0F7B2CEB629600E64EF9 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = AFCB0F7A2CEB629600E64EF9 /* KeychainAccess */; };
 		AFCB0F802CEB630800E64EF9 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = AFCB0F7F2CEB630800E64EF9 /* KeychainAccess */; };
@@ -17,6 +18,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		95F7187C2FB75C79004EAAC2 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		AFCB0F442CEB5CDD00E64EF9 /* Enroll Macs WSO IC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Enroll Macs WSO IC.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -76,6 +78,7 @@
 			children = (
 				AFCB0F462CEB5CDD00E64EF9 /* Enroll Macs WSO */,
 				AFCB0F452CEB5CDD00E64EF9 /* Products */,
+				95F7187C2FB75C79004EAAC2 /* README.md */,
 			);
 			sourceTree = "<group>";
 		};
@@ -162,6 +165,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				95F7187D2FB75C79004EAAC2 /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
