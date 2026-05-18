@@ -19,34 +19,9 @@
 		AFCB0F442CEB5CDD00E64EF9 /* Enroll Macs WSO IC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Enroll Macs WSO IC.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		9504C6B82FB749D700598360 /* Exceptions for "Enroll Macs WSO" folder in "Enroll Macs WSO IC" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Documentations/CORE_DATA_CHECKLIST.md,
-				Documentations/FILES_TO_DELETE.md,
-				Documentations/FINAL_REPORT.md,
-				Documentations/INDEX.md,
-				Documentations/MACHINES_PERSISTENCE_README.md,
-				Documentations/MIGRATION_GUIDE.md,
-				Documentations/NEXT_STEPS.md,
-				Documentations/PROJECT_STRUCTURE.md,
-				Documentations/QUICK_START.md,
-				Documentations/README.md,
-				Documentations/START_HERE.md,
-				Documentations/SUMMARY.md,
-				Documentations/VISUAL_OVERVIEW.md,
-			);
-			target = AFCB0F432CEB5CDD00E64EF9 /* Enroll Macs WSO IC */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		AFCB0F462CEB5CDD00E64EF9 /* Enroll Macs WSO */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				9504C6B82FB749D700598360 /* Exceptions for "Enroll Macs WSO" folder in "Enroll Macs WSO IC" target */,
-			);
 			path = "Enroll Macs WSO";
 			sourceTree = "<group>";
 		};
