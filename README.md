@@ -225,8 +225,7 @@ Cliquez sur **Enregistrer** pour valider la configuration.
 
 Pour tester sans envoyer réellement vers Samba :
 
-```bash
-// Commande bash pour activer le mode test :
+```console
 defaults write ch.epfl.Enroll-Macs-WSO-IC  isTestMode -bool false
 ```
 
