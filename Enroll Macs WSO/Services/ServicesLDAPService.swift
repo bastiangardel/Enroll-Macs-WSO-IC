@@ -28,8 +28,8 @@ class LDAPService {
             return
         }
 
-        guard let bindPassword = KeychainService.shared.get(key: .sambaPassword),
-              let bindUser = KeychainService.shared.get(key: .sambaUsername),
+        guard let bindPassword = KeychainService.shared.getSambaPassword(),
+              let bindUser = KeychainService.shared.getSambaUsername(),
               !bindPassword.isEmpty, !bindUser.isEmpty else {
             completion(.error)
             return

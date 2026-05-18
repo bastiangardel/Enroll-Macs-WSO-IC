@@ -36,8 +36,8 @@ class SambaService {
     
     private func saveFileToSamba(filename: String, content: Data, completion: @escaping (Bool, String) -> Void) {
         guard let config = CoreDataService.shared.getAppConfig(),
-              let sambaUsername = KeychainService.shared.get(key: .sambaUsername),
-              let sambaPassword = KeychainService.shared.get(key: .sambaPassword),
+              let sambaUsername = KeychainService.shared.getSambaUsername(),
+              let sambaPassword = KeychainService.shared.getSambaPassword(),
               let sambaPath = config.sambaPath else {
             completion(false, "Configuration manquante")
             return

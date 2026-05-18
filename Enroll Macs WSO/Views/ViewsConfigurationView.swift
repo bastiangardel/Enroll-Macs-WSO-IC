@@ -330,8 +330,8 @@ struct ConfigurationView: View {
             }
         }
         
-        sUsername = KeychainService.shared.get(key: .sambaUsername) ?? ""
-        sPassword = KeychainService.shared.get(key: .sambaPassword) ?? ""
+        sUsername = KeychainService.shared.getSambaUsername() ?? ""
+        sPassword = KeychainService.shared.getSambaPassword() ?? ""
 
         CoreDataService.shared.clearStorage()
     }
@@ -370,8 +370,8 @@ struct ConfigurationView: View {
             machineNamePrefixesJSON: prefixesJSON
         )
         
-        KeychainService.shared.save(key: .sambaUsername, value: sUsername)
-        KeychainService.shared.save(key: .sambaPassword, value: sPassword)
+        // Sauvegarde les identifiants Samba dans une seule entrée du trousseau
+        KeychainService.shared.saveSambaCredentials(username: sUsername, password: sPassword)
 
         isConfigured = true
     }
