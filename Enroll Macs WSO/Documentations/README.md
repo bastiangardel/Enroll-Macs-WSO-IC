@@ -7,7 +7,7 @@ Votre projet **Enroll Macs WSO** a été **entièrement restructuré** d'un fich
 ### 📦 Nouveaux Fichiers Créés
 
 #### Services (4 fichiers)
-- ✅ **ServicesKeychainService.swift** - Gestion sécurisée du Keychain
+- ✅ **ServicesKeychainService.swift** - Gestion sécurisée du Keychain (APIs Security natives)
 - ✅ **ServicesLDAPService.swift** - Requêtes LDAP pour emails
 - ✅ **ServicesSambaService.swift** - Upload vers Samba/SMB
 - ✅ **ServicesCoreDataService.swift** - Mise à jour avec intégration Keychain
@@ -153,8 +153,9 @@ if let config = getAppConfig() {
     print(config.sambaPath)
 }
 
-// Keychain
+// Keychain (ancien - avec KeychainAccess)
 keychain[KeychainKeys.sambaPassword.rawValue] = "pass"
+keychain[KeychainKeys.sambaUsername.rawValue] = "user"
 
 // LDAP
 fetchEmailFromLDAP(username: "user") { result in ... }
@@ -171,8 +172,10 @@ if let config = CoreDataService.shared.getAppConfig() {
     print(config.sambaPath)
 }
 
-// Keychain
-KeychainService.shared.set("pass", for: .sambaPassword)
+// Keychain (nouveau - APIs Security natives, une seule entrée)
+KeychainService.shared.saveSambaCredentials(username: "user", password: "pass")
+let username = KeychainService.shared.getSambaUsername()
+let password = KeychainService.shared.getSambaPassword()
 
 // LDAP
 LDAPService.shared.fetchEmail(username: "user") { result in ... }
@@ -181,7 +184,7 @@ LDAPService.shared.fetchEmail(username: "user") { result in ... }
 SambaService.shared.saveFile(filename: "file.json", content: data) { ... }
 ```
 
-**Avantage** : Code plus clair, services centralisés, tests plus faciles
+**Avantage** : Code plus clair, services centralisés, tests plus faciles, **Keychain natif sans dépendances externes**
 
 ---
 
@@ -193,6 +196,7 @@ SambaService.shared.saveFile(filename: "file.json", content: data) { ... }
 - ❌ Pas de séparation des responsabilités
 - ❌ Tests difficiles à écrire
 - ❌ Réutilisation impossible
+- ❌ Dépendance à KeychainAccess
 
 ### Après
 - ✅ 23+ fichiers organisés
@@ -201,12 +205,158 @@ SambaService.shared.saveFile(filename: "file.json", content: data) { ... }
 - ✅ Services testables (Singleton pattern)
 - ✅ Code réutilisable
 - ✅ Documentation complète
+- ✅ **Keychain natif** (APIs Security, pas de dépendances externes)
+- ✅ **Une seule entrée** pour les identifiants Samba (compte + mot de passe)
 
 ### Métriques
 - **Lisibilité** : +500%
 - **Maintenabilité** : +400%
 - **Testabilité** : +600%
 - **Scalabilité** : +300%
+
+---
+
+## 🔐 Améliorations du Keychain Service
+
+### Changements Majeurs
+
+La gestion des identifiants Samba a été **complètement repensée** :
+
+#### Avant (avec KeychainAccess)
+```swift
+import KeychainAccess
+
+// Deux entrées séparées dans le trousseau
+keychain["SambaUsername"] = "monUtilisateur"
+keychain["SambaPassword"] = "monMotDePasse"
+```
+
+#### Après (APIs Security natives)
+```swift
+import Security
+
+// Une seule entrée avec compte + mot de passe
+KeychainService.shared.saveSambaCredentials(
+    username: "monUtilisateur",
+    password: "monMotDePasse"
+)
+```
+
+### Avantages de la Nouvelle Approche
+
+| Aspect | Avant | Après |
+|--------|-------|-------|
+| **Nombre d'entrées** | 2 entrées séparées | 1 entrée combinée |
+| **Dépendances** | KeychainAccess (externe) | Security (natif macOS) |
+| **Structure** | Clé-valeur simple | Structure standard avec kSecAttrAccount |
+| **Visualisation** | Difficile à identifier | Compte visible dans Trousseau d'accès |
+| **Maintenance** | Dépendance à maintenir | Pas de dépendance externe |
+
+### Structure de l'Entrée dans le Trousseau
+
+L'entrée "SambaCredentials" contient :
+
+```
+Type             : Mot de passe générique (Generic Password)
+Service          : ch.epfl.Enroll-Macs-WSO-IC
+Label            : SambaCredentials
+Compte (Account) : [Votre nom d'utilisateur Samba]
+Mot de passe     : [Votre mot de passe Samba]
+Commentaire      : Identifiants Samba
+```
+
+### Comment Vérifier dans le Trousseau
+
+**Méthode 1 : Application Trousseau d'accès**
+1. Ouvrez `/Applications/Utilitaires/Trousseau d'accès.app`
+2. Sélectionnez "Connexion" dans la barre latérale
+3. Recherchez "SambaCredentials"
+4. Double-cliquez pour voir les détails
+
+**Méthode 2 : Ligne de commande**
+```bash
+# Afficher les informations
+security find-generic-password -s "ch.epfl.Enroll-Macs-WSO-IC" -l "SambaCredentials"
+
+# Afficher le mot de passe (demande confirmation)
+security find-generic-password -s "ch.epfl.Enroll-Macs-WSO-IC" -l "SambaCredentials" -w
+```
+
+**Méthode 3 : Fonction de débogage**
+```swift
+// Dans votre code
+KeychainService.shared.debugSambaCredentials()
+
+// Sortie console :
+// ✅ Entrée trouvée dans le trousseau:
+//    Service: ch.epfl.Enroll-Macs-WSO-IC
+//    Label: SambaCredentials
+//    Compte (username): monUtilisateur
+//    Commentaire: Identifiants Samba
+//    Mot de passe: ********** (présent, 15 caractères)
+```
+
+### Migration Automatique
+
+Si vous aviez déjà des identifiants stockés avec l'ancienne méthode (KeychainAccess), ils ne seront **pas automatiquement migrés**. Vous devrez :
+
+1. **Ressaisir** les identifiants dans la vue Configuration, ou
+2. **Ajouter une fonction de migration** (voir ci-dessous)
+
+#### Option : Fonction de Migration (à utiliser une fois)
+
+```swift
+// À ajouter temporairement dans KeychainService
+func migrateOldCredentials() {
+    // Tentative de récupération des anciennes entrées
+    let oldKeychain = Keychain(service: "ch.epfl.Enroll-Macs-WSO-IC")
+    
+    if let username = oldKeychain["SambaUsername"],
+       let password = oldKeychain["SambaPassword"] {
+        // Sauvegarde dans le nouveau format
+        saveSambaCredentials(username: username, password: password)
+        
+        // Suppression des anciennes entrées
+        try? oldKeychain.remove("SambaUsername")
+        try? oldKeychain.remove("SambaPassword")
+        
+        print("✅ Migration des identifiants Samba réussie")
+    }
+}
+```
+
+### Suppression de la Dépendance KeychainAccess
+
+Vous pouvez maintenant **supprimer complètement** la dépendance KeychainAccess :
+
+**Si vous utilisez Swift Package Manager (Package.swift)** :
+```swift
+// AVANT
+dependencies: [
+    .package(url: "https://github.com/kishikawakatsumi/KeychainAccess.git", from: "4.2.0"),
+    // ...
+]
+
+// APRÈS - Supprimez la ligne KeychainAccess
+dependencies: [
+    // KeychainAccess supprimé ✅
+    // ...
+]
+```
+
+**Si vous utilisez CocoaPods (Podfile)** :
+```ruby
+# AVANT
+pod 'KeychainAccess'
+
+# APRÈS - Commentez ou supprimez
+# pod 'KeychainAccess'  # Plus nécessaire ✅
+```
+
+Puis exécutez :
+```bash
+pod install  # ou pod update
+```
 
 ---
 
@@ -243,18 +393,41 @@ let groups = CoreDataService.shared.getOrganisationGroups()
 ### KeychainService
 
 ```swift
-// Enregistrer un mot de passe
-KeychainService.shared.set("myPassword", for: .sambaPassword)
-KeychainService.shared.set("myUsername", for: .sambaUsername)
+// Sauvegarder les identifiants Samba (une seule entrée dans le trousseau)
+KeychainService.shared.saveSambaCredentials(username: "myUsername", password: "myPassword")
 
-// Récupérer un mot de passe
-if let password = KeychainService.shared.get(.sambaPassword) {
+// Récupérer le nom d'utilisateur
+if let username = KeychainService.shared.getSambaUsername() {
+    print("Username: \(username)")
+}
+
+// Récupérer le mot de passe
+if let password = KeychainService.shared.getSambaPassword() {
     print("Password: \(password)")
 }
 
+// Supprimer les identifiants Samba
+KeychainService.shared.deleteSambaCredentials()
+
 // Tout supprimer
-try? KeychainService.shared.removeAll()
+KeychainService.shared.clearAll()
+
+// Debug - Afficher les informations de l'entrée dans le trousseau
+KeychainService.shared.debugSambaCredentials()
 ```
+
+**Note importante** : Les identifiants Samba sont maintenant stockés dans **une seule entrée** du trousseau :
+- **Compte** (kSecAttrAccount) : contient le username
+- **Mot de passe** (kSecValueData) : contient le password
+- **Label** : "SambaCredentials"
+- **Service** : "ch.epfl.Enroll-Macs-WSO-IC"
+
+Cette approche utilise les **APIs Security natives** de macOS, sans dépendance externe à la librairie KeychainAccess.
+
+Pour visualiser l'entrée dans le trousseau :
+1. Ouvrez l'application "Trousseau d'accès"
+2. Recherchez "SambaCredentials" ou "ch.epfl.Enroll-Macs-WSO-IC"
+3. Double-cliquez pour voir les détails (compte + mot de passe)
 
 ### LDAPService
 

@@ -120,10 +120,11 @@ L'application suit une architecture modulaire avec séparation claire des respon
 
 ### Dépendances Swift Packages
 
-L'application utilise les Swift Packages suivants :
+L'application utilise le Swift Package suivant :
 
-- **[KeychainAccess](https://github.com/kishikawakatsumi/KeychainAccess)** : Gestion sécurisée du Keychain macOS
 - **[SMBClient](https://github.com/kishikawakatsumi/SMBClient)** : Client Swift pour connexions Samba/SMB
+
+**Note** : La gestion du Keychain utilise maintenant les **APIs Security natives de macOS** (framework `Security`), sans dépendance externe.
 
 ---
 
@@ -149,15 +150,13 @@ Xcode devrait automatiquement télécharger les Swift Packages via SPM (Swift Pa
 Si nécessaire, ajoutez-les manuellement :
 
 1. **File** → **Add Packages...**
-2. Ajoutez les packages suivants :
-
-   **KeychainAccess** :
-   - URL : `https://github.com/kishikawakatsumi/KeychainAccess`
-   - Version : `4.2.2` ou supérieure
+2. Ajoutez le package suivant :
 
    **SMBClient** :
    - URL : `https://github.com/kishikawakatsumi/SMBClient`
    - Version : Dernière version disponible
+
+**Note** : Le Keychain est géré nativement avec le framework `Security` d'Apple, aucune dépendance externe n'est requise.
 
 ### 4. Configurer le Signing
 
@@ -188,7 +187,7 @@ Au premier lancement, l'application affiche l'écran de configuration :
 2. **Connexion Samba** :
    - Chemin du partage (ex: `smb://serveur.domaine.ch/partage/enrollments`)
    - Nom d'utilisateur
-   - Mot de passe (stocké de manière sécurisée dans le Keychain via KeychainAccess)
+   - Mot de passe (stocké de manière sécurisée dans le Keychain via le framework Security natif)
 
 3. **Serveur LDAP** :
    - URL du serveur (ex: `ldap://ad.domaine.ch:3268`)
@@ -297,14 +296,26 @@ ldapsearch -H ldap://ad.domaine.ch:3268 \
 
 ### Sécurité Keychain
 
-Les credentials Samba sont stockés dans le Keychain macOS via **KeychainAccess** :
+Les identifiants Samba sont stockés dans le Keychain macOS via les **APIs Security natives** :
 
-- **Service** : `ch.domaine.EnrollMacsWSO.samba`
-- **Accounts** :
-  - `sambaUsername`
-  - `sambaPassword`
+**Structure de l'entrée** :
+- **Type** : Mot de passe générique (Generic Password)
+- **Service** : `ch.epfl.Enroll-Macs-WSO-IC`
+- **Label** : `SambaCredentials`
+- **Compte (kSecAttrAccount)** : Le nom d'utilisateur Samba
+- **Mot de passe (kSecValueData)** : Le mot de passe Samba
+- **Commentaire** : "Identifiants Samba"
 
-Le framework KeychainAccess offre une API Swift moderne et sécurisée pour gérer les credentials sensibles.
+**Avantages** :
+- ✅ Aucune dépendance externe
+- ✅ APIs Security natives de macOS
+- ✅ Une seule entrée combinant compte + mot de passe
+- ✅ Visible et éditable dans l'application "Trousseau d'accès"
+
+**Comment visualiser** :
+1. Ouvrez `/Applications/Utilitaires/Trousseau d'accès.app`
+2. Recherchez "SambaCredentials" ou "ch.epfl.Enroll-Macs-WSO-IC"
+3. Double-cliquez pour voir les détails (compte + mot de passe)
 
 ---
 
@@ -314,7 +325,7 @@ Le framework KeychainAccess offre une API Swift moderne et sécurisée pour gér
 
 ```
 Utilisateur → ConfigurationView → CoreDataService.saveConfiguration()
-                                 → KeychainService.set() (via KeychainAccess)
+                                 → KeychainService.saveSambaCredentials() (APIs Security natives)
 ```
 
 ### 2. Ajout d'une Machine
@@ -350,7 +361,7 @@ Pour chaque machine:
         │   └─→ FileManager → ~/Downloads/TestStorage/{FriendlyName}.json
         │
         └─→ Sinon:
-            ├─→ KeychainService → get credentials (KeychainAccess)
+            ├─→ KeychainService.getSambaUsername() & getSambaPassword() (APIs Security)
             ├─→ SMBClient.login()
             ├─→ SMBClient.connectShare()
             ├─→ SMBClient.upload(filename.json)
@@ -401,16 +412,11 @@ Pour chaque machine, un fichier JSON individuel est créé avec le nom `{Friendl
 - **SwiftUI** : Interface utilisateur déclarative
 - **Core Data** : Persistance des données et configuration
 - **LocalAuthentication** : Touch ID / Face ID
+- **Security** : Gestion sécurisée du Keychain (APIs natives)
 - **AppKit** : Interactions système macOS
 - **Metal** : Vérification du support graphique
 
 ### Swift Packages (Frameworks Tiers)
-
-- **[KeychainAccess](https://github.com/kishikawakatsumi/KeychainAccess)** (v4.2.2+)
-  - Gestion sécurisée du Keychain macOS
-  - API Swift moderne et type-safe
-  - Support des items génériques et Internet passwords
-  - Auteur : Kishikawa Katsumi
 
 - **[SMBClient](https://github.com/kishikawakatsumi/SMBClient)**
   - Client Swift pour protocole SMB/CIFS
@@ -454,7 +460,7 @@ Enroll Macs WSO/
 │
 ├── ⚙️ Services/                               # Logique métier
 │   ├── ServicesCoreDataService.swift         # Persistance Core Data
-│   ├── ServicesKeychainService.swift         # Gestion Keychain (KeychainAccess)
+│   ├── ServicesKeychainService.swift         # Gestion Keychain (APIs Security natives)
 │   ├── ServicesLDAPService.swift             # Requêtes LDAP
 │   └── ServicesSambaService.swift            # Upload Samba (SMBClient)
 │
@@ -626,9 +632,11 @@ CoreDataService.shared.resetConfiguration()
 ### Où sont stockées les données ?
 
 - **Configuration** : Core Data (`~/Library/Application Support/Enroll Macs WSO/`)
-- **Credentials Samba** : Keychain macOS via KeychainAccess
-  - Service: `ch.domaine.EnrollMacsWSO.samba`
-  - Accounts: `sambaUsername`, `sambaPassword`
+- **Credentials Samba** : Keychain macOS (APIs Security natives)
+  - Service: `ch.epfl.Enroll-Macs-WSO-IC`
+  - Label: `SambaCredentials`
+  - Compte: Username Samba (kSecAttrAccount)
+  - Mot de passe: Password Samba (kSecValueData)
 - **Machines en attente** : Core Data (JSON dans `AppConfig.machinesJSON`)
 - **Fichiers JSON générés** : 
   - Mode production → Partage Samba
@@ -676,13 +684,13 @@ Développé avec ❤️ par **Bastian Gardel** - Mai 2026
 - SwiftUI
 - Core Data
 - LocalAuthentication
+- Security (Keychain)
 - AppKit
 
 **Swift Packages** :
-- [KeychainAccess](https://github.com/kishikawakatsumi/KeychainAccess) par Kishikawa Katsumi
 - [SMBClient](https://github.com/kishikawakatsumi/SMBClient) par Kishikawa Katsumi
 
-Un grand merci à **Kishikawa Katsumi** pour ses excellents frameworks open-source !
+Un grand merci à **Kishikawa Katsumi** pour son excellent framework open-source !
 
 ---
 
