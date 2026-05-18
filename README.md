@@ -702,6 +702,6 @@ Pour toute question, bug report ou demande de fonctionnalité :
 
 ---
 
-**Version** : 2.0  
-**Dernière mise à jour** : 15 mai 2026  
+**Version** : 1.1  
+**Dernière mise à jour** : 18 mai 2026  
 **Statut** : ✅ Production Ready
