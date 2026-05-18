@@ -290,7 +290,7 @@ L'application utilise `ldapsearch` pour interroger Active Directory :
 
 ```bash
 ldapsearch -H ldap://ad.domaine.ch:3268 \
-  -D "INTRANET\\username" \
+  -D "DOMAINE\\username" \
   -w "password" \
   -b "DC=domaine,DC=ch" \
   "(sAMAccountName=username)" \
