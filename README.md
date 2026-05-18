@@ -223,13 +223,19 @@ Cliquez sur **Enregistrer** pour valider la configuration.
 
 ### Mode Test
 
-Pour tester sans envoyer réellement vers Samba :
+Pour tester sans envoyer réellement vers Samba, lancez la commande ci-dessous et redémarrez l'app:
+
+```console
+defaults write ch.epfl.Enroll-Macs-WSO-IC  isTestMode -bool true
+```
+
+Les fichiers seront sauvegardés localement dans `~/Downloads/TestStorage/`
+
+Pour revenir en mode normal, lancez la commande ci-dessous et redémarrez l'app:
 
 ```console
 defaults write ch.epfl.Enroll-Macs-WSO-IC  isTestMode -bool false
 ```
-
-Les fichiers seront sauvegardés localement dans `~/Downloads/TestStorage/`
 
 ---
 
