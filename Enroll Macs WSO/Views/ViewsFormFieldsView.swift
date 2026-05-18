@@ -14,6 +14,7 @@ struct FormFieldsView: View {
     @Binding var serialNumber: String
     @Binding var locationGroupId: String
     @Binding var email: String
+    @Binding var sciper: String
     @Binding var macEnrollmentProfile: String
     @Binding var friendlyNamePrefix: String
     @Binding var isLoadingEmail: Bool
@@ -207,13 +208,14 @@ struct FormFieldsView: View {
     private func loadEmailFromLDAP() {
         isLoadingEmail = true
         ldapMessage = ""
+        
         LDAPService.shared.fetchEmail(username: endUserName) { result in
             isLoadingEmail = false
             switch result {
             case .found(let mail):
                 email = mail
                 ldapMessage = ""
-            case .noMail:
+            case .noAttribute:
                 email = ""
                 ldapMessage = "Pas d'email disponible, merci d'en définir un."
             case .notFound:

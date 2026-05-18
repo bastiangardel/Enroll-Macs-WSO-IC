@@ -54,7 +54,8 @@ L'application simplifie considérablement le processus d'enrôlement qui nécess
 
 ### Intégration Active Directory
 
-- **Recherche LDAP** : Récupération automatique des emails utilisateur
+- **Recherche LDAP** : Récupération automatique des emails et numéros SCIPER
+- **Validation SCIPER** : Confirmation visuelle avant enrôlement avec statut détaillé
 - **Configuration flexible** : Support de différents serveurs LDAP
 - **Authentification sécurisée** : Credentials stockés dans le Keychain
 
@@ -212,6 +213,15 @@ Cliquez sur **Enregistrer** pour valider la configuration.
    - **Enrollment Profile** : Profil d'enrôlement à utiliser
    - **Email** : Utilisez "Load email" pour récupérer automatiquement depuis AD
 3. Cliquez sur **Ajouter**
+4. Un popup de confirmation s'affiche avec :
+   - Le **username** saisi
+   - Le **SCIPER** récupéré automatiquement depuis l'AD (champ `company`)
+   - Statut visuel du SCIPER avec icône :
+     - ✅ **Vert** : SCIPER trouvé et valide
+     - ➖ **Orange** : Pas de SCIPER configuré dans l'AD
+     - ⚠️ **Orange** : Utilisateur non trouvé dans l'AD
+     - ❌ **Rouge** : Erreur de connexion LDAP
+5. Validez ou annulez l'ajout dans le popup
 
 ### Envoyer les Machines
 
@@ -286,7 +296,9 @@ defaults write ch.epfl.Enroll-Macs-WSO-IC  isTestMode -bool false
 
 ### Configuration LDAP
 
-L'application utilise `ldapsearch` pour interroger Active Directory :
+L'application utilise `ldapsearch` pour interroger Active Directory et récupérer deux attributs :
+
+#### 1. Email (champ `mail`)
 
 ```bash
 ldapsearch -H ldap://ad.domaine.ch:3268 \
@@ -297,7 +309,26 @@ ldapsearch -H ldap://ad.domaine.ch:3268 \
   cn mail
 ```
 
-**Attributs récupérés** : `cn` (nom complet) et `mail` (email)
+#### 2. SCIPER (champ `company`)
+
+```bash
+ldapsearch -H ldap://ad.domaine.ch:3268 \
+  -D "DOMAINE\\username" \
+  -w "password" \
+  -b "DC=domaine,DC=ch" \
+  "(sAMAccountName=username)" \
+  cn company
+```
+
+**Attributs récupérés** :
+- `cn` : Nom complet (Common Name)
+- `mail` : Adresse email de l'utilisateur
+- `company` : Numéro SCIPER (identifiant unique à l'EPFL)
+
+**Comportement** :
+- L'**email** est récupéré lors du clic sur "Load email" dans le formulaire
+- Le **SCIPER** est récupéré automatiquement lors du clic sur "Ajouter" ou "Enregistrer"
+- Un popup de confirmation affiche le username et le SCIPER avec un statut visuel
 
 ### Sécurité Keychain
 
@@ -340,13 +371,24 @@ Utilisateur → AddMachineView
     ↓
     ├─→ Button "Load email" → LDAPService.fetchEmail()
     │                         → Process("/usr/bin/ldapsearch")
-    │                         → Parse LDAP output
+    │                         → Parse LDAP output (attribut "mail")
     │                         → email field updated
     ↓
-    └─→ Button "Ajouter" → Validation
-                         → machines.append()
-                         → CoreDataService.saveMachines()
-                         → JSON encoding → Core Data
+    └─→ Button "Ajouter" → LDAPService.fetchSciper()
+                         → Process("/usr/bin/ldapsearch")
+                         → Parse LDAP output (attribut "company")
+                         → ConfirmationDialogView affichée
+                             ├─→ Username
+                             ├─→ SCIPER avec statut visuel :
+                             │   ├─ ✅ found(String) : SCIPER trouvé
+                             │   ├─ ➖ noAttribute : Pas de SCIPER configuré
+                             │   ├─ ⚠️ notFoundInAD : Utilisateur non trouvé
+                             │   └─ ❌ ldapError : Erreur de connexion
+                             ↓
+                         → Button "Valider" → Validation
+                                            → machines.append()
+                                            → CoreDataService.saveMachines()
+                                            → JSON encoding → Core Data
 ```
 
 ### 3. Envoi vers Samba
@@ -455,6 +497,7 @@ Enroll Macs WSO/
 │   ├── ViewsAddMachineView.swift             # Ajout de machine
 │   ├── ViewsDetailsMachineView.swift         # Édition de machine
 │   ├── ViewsFormFieldsView.swift             # Formulaire réutilisable
+│   ├── ViewsConfirmationDialogView.swift     # Popup de confirmation SCIPER
 │   └── ViewsConfigurationView.swift          # Configuration app
 │
 ├── 📦 Models/                                 # Modèles de données
@@ -587,12 +630,35 @@ struct MachineTests {
 1. Assurez-vous que le serveur LDAP est configuré dans l'app
 2. Dans le formulaire d'ajout, saisissez le username
 3. Cliquez sur **Load email**
-4. L'email est récupéré automatiquement depuis Active Directory
+4. L'email est récupéré automatiquement depuis Active Directory (attribut `mail`)
 
 **Résolution des problèmes** :
 - Vérifiez que `ldapsearch` est installé : `which ldapsearch`
 - Testez la connexion LDAP manuellement
 - Vérifiez les credentials dans le Keychain
+
+### Comment fonctionne la validation SCIPER ?
+
+Le **SCIPER** (identifiant unique EPFL) est récupéré automatiquement lors de l'enregistrement d'une machine :
+
+1. **Lors du clic sur "Ajouter" ou "Enregistrer"** :
+   - L'application effectue une requête LDAP pour récupérer le champ `company`
+   - Un popup de confirmation s'affiche avec le username et le SCIPER
+
+2. **Statuts possibles du SCIPER** :
+
+| Icône | Couleur | Statut | Signification |
+|-------|---------|--------|---------------|
+| ✅ | Vert | `found(String)` | SCIPER trouvé et affiché |
+| ➖ | Orange | `noAttribute` | L'utilisateur existe mais n'a pas de SCIPER configuré |
+| ⚠️ | Orange | `notFoundInAD` | L'utilisateur n'existe pas dans l'Active Directory |
+| ❌ | Rouge | `ldapError` | Erreur de connexion au serveur LDAP |
+
+3. **Actions possibles** :
+   - **Valider** : Confirmer l'ajout/modification malgré un SCIPER manquant ou en erreur
+   - **Annuler** : Revenir au formulaire pour corriger le username
+
+**Note** : Le SCIPER n'est pas stocké dans le fichier JSON d'enrôlement. Il sert uniquement à la validation visuelle pour s'assurer que le username est correct.
 
 ### L'upload Samba échoue, que faire ?
 
@@ -706,6 +772,12 @@ Pour toute question, bug report ou demande de fonctionnalité :
 
 ---
 
-**Version** : 1.1  
+**Version** : 1.2  
 **Dernière mise à jour** : 18 mai 2026  
 **Statut** : ✅ Production Ready
+
+**Nouveautés v1.2** :
+- ✨ Validation SCIPER avec popup de confirmation
+- 🎨 Statuts visuels pour la récupération SCIPER (✅ ➖ ⚠️ ❌)
+- 🔍 Récupération automatique depuis l'AD (champ `company`)
+- 📊 Amélioration de l'expérience utilisateur

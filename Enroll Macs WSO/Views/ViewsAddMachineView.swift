@@ -16,6 +16,8 @@ struct AddMachineView: View {
     @State private var serialNumber = ""
     @State private var locationGroupId = ""
     @State private var email = ""
+    @State private var sciper = ""
+    @State private var sciperStatus: SciperStatus = .noAttribute
     @State private var macEnrollmentProfile = ""
     @State private var friendlyNamePrefix = ""
     @State private var isLoadingEmail = false
@@ -26,6 +28,7 @@ struct AddMachineView: View {
     @State private var selectedProfileId: UUID? = nil
     @State private var machineNamePrefixes: [MachineNamePrefix] = []
     @State private var selectedPrefixId: UUID? = nil
+    @State private var showConfirmation = false
 
     private var friendlyName: String { 
         let prefix = machineNamePrefixes.first(where: { $0.id == selectedPrefixId })?.prefix ?? friendlyNamePrefix
@@ -41,6 +44,7 @@ struct AddMachineView: View {
                     serialNumber: $serialNumber,
                     locationGroupId: $locationGroupId,
                     email: $email,
+                    sciper: $sciper,
                     macEnrollmentProfile: $macEnrollmentProfile,
                     friendlyNamePrefix: $friendlyNamePrefix,
                     isLoadingEmail: $isLoadingEmail,
@@ -58,9 +62,9 @@ struct AddMachineView: View {
             
             HStack {
                 Button("Ajouter") {
-                    addMachine()
+                    loadSciperAndShowConfirmation()
                 }
-                .disabled(!isFormValid)
+                .disabled(!isFormValid || isLoadingEmail)
                 .buttonStyle(.borderedProminent)
 
                 Button("Annuler") {
@@ -72,6 +76,19 @@ struct AddMachineView: View {
             .padding(.horizontal)
             .padding(.top, 16)
             .padding(.bottom, 8)
+        }
+        .sheet(isPresented: $showConfirmation) {
+            ConfirmationDialogView(
+                username: endUserName,
+                sciperStatus: sciperStatus,
+                onConfirm: {
+                    showConfirmation = false
+                    addMachine()
+                },
+                onCancel: {
+                    showConfirmation = false
+                }
+            )
         }
         .onAppear {
             organisationGroups = CoreDataService.shared.getOrganisationGroups()
@@ -106,5 +123,27 @@ struct AddMachineView: View {
         )
         onAdd(newMachine)
         dismiss()
+    }
+    
+    private func loadSciperAndShowConfirmation() {
+        isLoadingEmail = true
+        LDAPService.shared.fetchSciper(username: endUserName) { result in
+            isLoadingEmail = false
+            switch result {
+            case .found(let sciperValue):
+                sciper = sciperValue
+                sciperStatus = .found(sciperValue)
+            case .noAttribute:
+                sciper = ""
+                sciperStatus = .noAttribute
+            case .notFound:
+                sciper = ""
+                sciperStatus = .notFoundInAD
+            case .error:
+                sciper = ""
+                sciperStatus = .ldapError
+            }
+            showConfirmation = true
+        }
     }
 }

@@ -9,9 +9,18 @@ import Foundation
 
 enum LDAPResult {
     case found(String)
-    case noMail
     case notFound
+    case noAttribute
     case error
+}
+
+enum LDAPAttribute: String {
+    case email = "mail"
+    case sciper = "company"
+    
+    var ldapFieldName: String {
+        return self.rawValue
+    }
 }
 
 class LDAPService {
@@ -20,6 +29,14 @@ class LDAPService {
     private init() {}
     
     func fetchEmail(username: String, completion: @escaping (LDAPResult) -> Void) {
+        fetchLDAPAttribute(.email, for: username, completion: completion)
+    }
+    
+    func fetchSciper(username: String, completion: @escaping (LDAPResult) -> Void) {
+        fetchLDAPAttribute(.sciper, for: username, completion: completion)
+    }
+    
+    private func fetchLDAPAttribute(_ attribute: LDAPAttribute, for username: String, completion: @escaping (LDAPResult) -> Void) {
         guard let config = CoreDataService.shared.getAppConfig(),
               let ldapServer = config.ldapServer, !ldapServer.isEmpty,
               let ldapBaseDN = config.ldapBaseDN, !ldapBaseDN.isEmpty,
@@ -44,7 +61,7 @@ class LDAPService {
                 "-w", bindPassword,
                 "-b", ldapBaseDN,
                 "(sAMAccountName=\(username))",
-                "cn", "mail"
+                "cn", attribute.ldapFieldName
             ]
 
             let pipe = Pipe()
@@ -88,15 +105,16 @@ class LDAPService {
                     return
                 }
 
-                let email = output
+                let fieldName = attribute.ldapFieldName.lowercased()
+                let value = output
                     .components(separatedBy: "\n")
-                    .first(where: { $0.lowercased().hasPrefix("mail:") })
-                    .map { String($0.dropFirst(5)).trimmingCharacters(in: .whitespaces) }
+                    .first(where: { $0.lowercased().hasPrefix("\(fieldName):") })
+                    .map { String($0.dropFirst(fieldName.count + 1)).trimmingCharacters(in: .whitespaces) }
 
-                if let email = email, !email.isEmpty {
-                    DispatchQueue.main.async { completion(.found(email)) }
+                if let value = value, !value.isEmpty {
+                    DispatchQueue.main.async { completion(.found(value)) }
                 } else {
-                    DispatchQueue.main.async { completion(.noMail) }
+                    DispatchQueue.main.async { completion(.noAttribute) }
                 }
             } catch {
                 DispatchQueue.main.async { completion(.error) }
