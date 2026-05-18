@@ -602,7 +602,6 @@ struct MachineTests {
    - Partage accessible depuis votre Mac
 
 2. **Testez en mode test** :
-   - Activez `ConfigManager.isTestMode = true`
    - Les fichiers seront sauvegardés localement dans `~/Downloads/TestStorage/`
 
 3. **Vérifiez les permissions** :
