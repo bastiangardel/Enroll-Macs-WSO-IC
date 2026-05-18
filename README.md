@@ -225,9 +225,9 @@ Cliquez sur **Enregistrer** pour valider la configuration.
 
 Pour tester sans envoyer réellement vers Samba :
 
-```swift
-// Dans ConfigManager.swift, activez le mode test :
-var isTestMode: Bool = true
+```bash
+// Commande bash pour activer le mode test :
+defaults write ch.epfl.Enroll-Macs-WSO-IC  isTestMode -bool false
 ```
 
 Les fichiers seront sauvegardés localement dans `~/Downloads/TestStorage/`
