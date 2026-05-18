@@ -66,6 +66,39 @@ class CoreDataService {
         KeychainService.shared.clearAll()
     }
     
+    func clearConfiguration() {
+        guard let config = getAppConfig() else { return }
+        
+        // Sauvegarder les machines avant de tout effacer
+        let savedMachines = config.machinesJSON
+        
+        let context = PersistenceController.shared.container.viewContext
+        
+        // Réinitialiser tous les champs sauf machinesJSON
+        config.platformId = 0
+        config.ownership = nil
+        config.messageType = 0
+        config.sambaPath = nil
+        config.ldapServer = nil
+        config.ldapBaseDN = nil
+        config.organisationGroupsJSON = nil
+        config.enrollmentProfiles = nil
+        config.machineNamePrefixesJSON = nil
+        
+        // Restaurer les machines
+        config.machinesJSON = savedMachines
+        
+        do {
+            try context.save()
+            print("Configuration effacée (machines préservées)")
+        } catch {
+            print("Erreur lors de l'effacement de la configuration: \(error)")
+        }
+        
+        // Effacer aussi les identifiants Samba du trousseau
+        KeychainService.shared.clearAll()
+    }
+    
     // MARK: - Machine Persistence
     
     func saveMachines(_ machines: [Machine]) {

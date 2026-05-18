@@ -767,6 +767,6 @@ Pour toute question, bug report ou demande de fonctionnalité :
 
 ---
 
-**Version** : 1.3  
+**Version** : 1.4  
 **Dernière mise à jour** : 18 mai 2026  
 **Statut** : ✅ Production Ready

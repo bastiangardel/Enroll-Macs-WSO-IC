@@ -332,8 +332,6 @@ struct ConfigurationView: View {
         
         sUsername = KeychainService.shared.getSambaUsername() ?? ""
         sPassword = KeychainService.shared.getSambaPassword() ?? ""
-
-        CoreDataService.shared.clearStorage()
     }
 
     func saveConfiguration() {
@@ -377,6 +375,8 @@ struct ConfigurationView: View {
     }
 
     func clearFields() {
+        CoreDataService.shared.clearConfiguration()
+        
         pID = ""
         OShip = ""
         MT = ""
