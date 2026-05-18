@@ -517,15 +517,10 @@ Enroll Macs WSO/
 │   ├── ConfigManager.swift                   # Configuration globale
 │   └── Persistence.swift                     # Stack Core Data
 │
-├── 💾 Core Data/                              # Modèle Core Data
-│   ├── EnrollMacsWSO.xcdatamodeld            # Modèle de données
-│   ├── CoreDataAppConfig+CoreDataClass.swift
-│   └── CoreDataAppConfig+CoreDataProperties.swift
-│
-└── 📚 Documentation/                          # Documentation projet
-    ├── PROJECT_STRUCTURE.md                  # Architecture détaillée
-    ├── MIGRATION_GUIDE.md                    # Guide de migration
-    └── VISUAL_OVERVIEW.md                    # Vue d'ensemble visuelle
+└── 💾 Core Data/                              # Modèle Core Data
+    └── EnrollMacsWSO.xcdatamodeld            # Modèle de données
+  
+
 ```
 
 ---
@@ -643,7 +638,7 @@ Le **SCIPER** (identifiant unique EPFL) est récupéré automatiquement lors de 
 
 1. **Lors du clic sur "Ajouter" ou "Enregistrer"** :
    - L'application effectue une requête LDAP pour récupérer le champ `company`
-   - Un popup de confirmation s'affiche avec le username et le SCIPER
+   - Un popup de confirmation s'affiche avec le username saisi, l'email saisi et le SCIPER
 
 2. **Statuts possibles du SCIPER** :
 
@@ -772,12 +767,6 @@ Pour toute question, bug report ou demande de fonctionnalité :
 
 ---
 
-**Version** : 1.2  
+**Version** : 1.3  
 **Dernière mise à jour** : 18 mai 2026  
 **Statut** : ✅ Production Ready
-
-**Nouveautés v1.2** :
-- ✨ Validation SCIPER avec popup de confirmation
-- 🎨 Statuts visuels pour la récupération SCIPER (✅ ➖ ⚠️ ❌)
-- 🔍 Récupération automatique depuis l'AD (champ `company`)
-- 📊 Amélioration de l'expérience utilisateur

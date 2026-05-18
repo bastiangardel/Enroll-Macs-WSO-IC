@@ -79,7 +79,7 @@ struct AddMachineView: View {
         }
         .sheet(isPresented: $showConfirmation) {
             ConfirmationDialogView(
-                username: endUserName,
+                username: endUserName, email: email,
                 sciperStatus: sciperStatus,
                 onConfirm: {
                     showConfirmation = false

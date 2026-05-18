@@ -55,6 +55,7 @@ enum SciperStatus {
 
 struct ConfirmationDialogView: View {
     let username: String
+    let email: String
     let sciperStatus: SciperStatus
     let onConfirm: () -> Void
     let onCancel: () -> Void
@@ -71,6 +72,14 @@ struct ConfirmationDialogView: View {
                         .fontWeight(.medium)
                         .frame(width: 100, alignment: .leading)
                     Text(username)
+                        .foregroundColor(.secondary)
+                }
+                
+                HStack {
+                    Text("Email:")
+                        .fontWeight(.medium)
+                        .frame(width: 100, alignment: .leading)
+                    Text(email)
                         .foregroundColor(.secondary)
                 }
                 
