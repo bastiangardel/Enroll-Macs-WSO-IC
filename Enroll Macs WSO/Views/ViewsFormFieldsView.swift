@@ -115,6 +115,9 @@ struct FormFieldsView: View {
                 Text("Suffixe (optionnel)")
                     .frame(width: 180, alignment: .leading)
                     .foregroundColor(.primary)
+                Text(" ")
+                    .foregroundColor(.clear)
+                    .frame(width: 8)
                 if machineNameSuffixes.isEmpty {
                     Text("Aucun suffixe configuré")
                         .foregroundColor(.secondary)
