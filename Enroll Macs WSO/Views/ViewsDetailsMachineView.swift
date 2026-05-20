@@ -150,14 +150,17 @@ struct DetailsMachineView: View {
         machineNamePrefixes = CoreDataService.shared.getMachineNamePrefixes()
         machineNameSuffixes = CoreDataService.shared.getMachineNameSuffixes()
         
-        // Pré-sélectionner l'OG correspondant
-        if let matching = organisationGroups.first(where: { $0.groupId == machine.locationGroupId }) {
-            selectedOGId = matching.id
-        }
-        
         // Pré-sélectionner le profil correspondant
         if let matching = enrollmentProfiles.first(where: { $0.name == machine.macEnrollmentProfile }) {
             selectedProfileId = matching.id
+            // Sélectionner automatiquement le groupe d'organisation associé au profil
+            selectedOGId = matching.organisationGroup.id
+            locationGroupId = matching.organisationGroup.groupId
+        } else {
+            // Fallback : pré-sélectionner l'OG directement si le profil n'est pas trouvé
+            if let matching = organisationGroups.first(where: { $0.groupId == machine.locationGroupId }) {
+                selectedOGId = matching.id
+            }
         }
         
         // Pré-sélectionner le préfixe et le suffixe correspondants

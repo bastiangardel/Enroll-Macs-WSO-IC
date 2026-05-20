@@ -10,4 +10,5 @@ import Foundation
 struct EnrollmentProfile: Identifiable, Codable, Equatable {
     var id: UUID = UUID()
     var name: String
+    var organisationGroup: OrganisationGroup
 }

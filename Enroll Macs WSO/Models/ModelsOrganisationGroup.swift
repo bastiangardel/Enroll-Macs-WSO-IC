@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct OrganisationGroup: Identifiable, Codable, Equatable {
+struct OrganisationGroup: Identifiable, Codable, Equatable, Hashable {
     var id: UUID = UUID()
     var name: String
     var groupId: String

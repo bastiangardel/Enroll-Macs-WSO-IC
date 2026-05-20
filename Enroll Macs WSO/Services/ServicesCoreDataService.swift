@@ -180,10 +180,50 @@ class CoreDataService {
     func getEnrollmentProfiles() -> [EnrollmentProfile] {
         guard let config = getAppConfig(),
               let json = config.enrollmentProfiles,
-              let data = json.data(using: .utf8),
-              let profiles = try? JSONDecoder().decode([EnrollmentProfile].self, from: data)
+              let data = json.data(using: .utf8)
         else { return [] }
-        return profiles
+        
+        // Essayer de charger les nouveaux profils (avec organisationGroup)
+        if let profiles = try? JSONDecoder().decode([EnrollmentProfile].self, from: data) {
+            return profiles
+        }
+        
+        // Migration : anciens profils sans groupe d'organisation
+        struct LegacyEnrollmentProfile: Codable {
+            var id: UUID
+            var name: String
+        }
+        
+        if let legacyProfiles = try? JSONDecoder().decode([LegacyEnrollmentProfile].self, from: data) {
+            let organisationGroups = getOrganisationGroups()
+            
+            // Si on a au moins un groupe d'organisation, migrer les profils
+            if let defaultGroup = organisationGroups.first {
+                let migratedProfiles = legacyProfiles.map { legacy in
+                    EnrollmentProfile(
+                        id: legacy.id,
+                        name: legacy.name,
+                        organisationGroup: defaultGroup
+                    )
+                }
+                
+                print("⚠️ Migration effectuée dans CoreDataService : \(legacyProfiles.count) profils migrés avec le groupe '\(defaultGroup.name)'")
+                
+                // Sauvegarder automatiquement la version migrée
+                if let migratedData = try? JSONEncoder().encode(migratedProfiles),
+                   let migratedJSON = String(data: migratedData, encoding: .utf8) {
+                    config.enrollmentProfiles = migratedJSON
+                    
+                    let context = PersistenceController.shared.container.viewContext
+                    try? context.save()
+                    print("✅ Profils migrés sauvegardés automatiquement")
+                }
+                
+                return migratedProfiles
+            }
+        }
+        
+        return []
     }
     
     // MARK: - Machine Name Prefixes

@@ -24,10 +24,12 @@ struct ConfigurationView: View {
     @State private var newOGGroupId: String = ""
     @State private var enrollmentProfiles: [EnrollmentProfile] = []
     @State private var newProfileName: String = ""
+    @State private var selectedOGForNewProfile: OrganisationGroup?
     @State private var machineNamePrefixes: [MachineNamePrefix] = []
     @State private var newPrefixName: String = ""
     @State private var machineNameSuffixes: [MachineNameSuffix] = []
     @State private var newSuffixName: String = ""
+    @State private var migrationPerformed: Bool = false
 
     private var canSave: Bool {
         !pID.isEmpty && !OShip.isEmpty && !MT.isEmpty && !sPath.isEmpty && 
@@ -38,6 +40,25 @@ struct ConfigurationView: View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
+                    // Message de migration si nécessaire
+                    if migrationPerformed {
+                        HStack {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(.orange)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Migration effectuée")
+                                    .font(.headline)
+                                    .foregroundColor(.orange)
+                                Text("Vos profils d'enrollment ont été automatiquement migrés. Vérifiez que le groupe d'organisation associé est correct pour chaque profil.")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .padding()
+                        .background(Color.orange.opacity(0.1))
+                        .cornerRadius(8)
+                    }
+                    
                     generalSettingsSection
                     Divider()
                     organisationGroupsSection
@@ -171,23 +192,45 @@ struct ConfigurationView: View {
             }
 
             if !enrollmentProfiles.isEmpty {
-                tableHeader(columns: [("Nom du profil", nil)])
+                tableHeader(columns: [("Nom du profil", nil), ("Groupe d'organisation", 200)])
                 Divider()
                 ForEach(enrollmentProfiles) { profile in
-                    itemRow(
-                        primaryText: profile.name,
-                        onDelete: { enrollmentProfiles.removeAll { $0.id == profile.id } }
-                    )
+                    HStack {
+                        Text(profile.name)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        Text(profile.organisationGroup.name)
+                            .frame(width: 200, alignment: .leading)
+                            .foregroundColor(.secondary)
+                        Button(action: { enrollmentProfiles.removeAll { $0.id == profile.id } }) {
+                            Image(systemName: "trash")
+                                .foregroundColor(.red)
+                        }
+                        .buttonStyle(.plain)
+                        .frame(width: 32)
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.gray.opacity(0.05))
+                    .cornerRadius(6)
                 }
             }
 
             HStack(spacing: 8) {
                 TextField("Nom du profil", text: $newProfileName)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
+                
+                Picker("Groupe", selection: $selectedOGForNewProfile) {
+                    Text("Sélectionner un groupe").tag(nil as OrganisationGroup?)
+                    ForEach(organisationGroups) { og in
+                        Text(og.name).tag(og as OrganisationGroup?)
+                    }
+                }
+                .frame(width: 200)
+                
                 Button("Ajouter") {
                     addEnrollmentProfile()
                 }
-                .disabled(newProfileName.trimmingCharacters(in: .whitespaces).isEmpty)
+                .disabled(newProfileName.trimmingCharacters(in: .whitespaces).isEmpty || selectedOGForNewProfile == nil)
             }
         }
     }
@@ -346,16 +389,46 @@ struct ConfigurationView: View {
             ldapServer = config.ldapServer ?? ""
             ldapBaseDN = config.ldapBaseDN ?? ""
 
+            // Charger d'abord les groupes d'organisation
             if let json = config.organisationGroupsJSON,
                let data = json.data(using: .utf8),
                let groups = try? JSONDecoder().decode([OrganisationGroup].self, from: data) {
                 organisationGroups = groups
             }
             
+            // Charger les profils d'enrollment avec migration si nécessaire
             if let json = config.enrollmentProfiles,
-               let data = json.data(using: .utf8),
-               let profiles = try? JSONDecoder().decode([EnrollmentProfile].self, from: data) {
-                enrollmentProfiles = profiles
+               let data = json.data(using: .utf8) {
+                
+                // Essayer de charger les nouveaux profils (avec organisationGroup)
+                if let profiles = try? JSONDecoder().decode([EnrollmentProfile].self, from: data) {
+                    enrollmentProfiles = profiles
+                } else {
+                    // Migration : anciens profils sans groupe d'organisation
+                    // Structure temporaire pour les anciens profils
+                    struct LegacyEnrollmentProfile: Codable {
+                        var id: UUID
+                        var name: String
+                    }
+                    
+                    if let legacyProfiles = try? JSONDecoder().decode([LegacyEnrollmentProfile].self, from: data),
+                       let defaultGroup = organisationGroups.first {
+                        // Convertir les anciens profils en ajoutant le premier groupe d'organisation
+                        enrollmentProfiles = legacyProfiles.map { legacy in
+                            EnrollmentProfile(
+                                id: legacy.id,
+                                name: legacy.name,
+                                organisationGroup: defaultGroup
+                            )
+                        }
+                        
+                        // Marquer qu'une migration a été effectuée
+                        migrationPerformed = true
+                        
+                        // Sauvegarder automatiquement la migration
+                        print("⚠️ Migration effectuée : \(legacyProfiles.count) profils migrés avec le groupe '\(defaultGroup.name)'")
+                    }
+                }
             }
             
             if let json = config.machineNamePrefixesJSON,
@@ -466,11 +539,15 @@ struct ConfigurationView: View {
     }
     
     func addEnrollmentProfile() {
+        guard let selectedGroup = selectedOGForNewProfile else { return }
+        
         let profile = EnrollmentProfile(
-            name: newProfileName.trimmingCharacters(in: .whitespaces)
+            name: newProfileName.trimmingCharacters(in: .whitespaces),
+            organisationGroup: selectedGroup
         )
         enrollmentProfiles.append(profile)
         newProfileName = ""
+        selectedOGForNewProfile = nil
     }
     
     func addMachineNamePrefix() {

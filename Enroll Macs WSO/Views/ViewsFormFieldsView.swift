@@ -165,32 +165,6 @@ struct FormFieldsView: View {
             
             requiredField(label: "Numéro de série", text: $serialNumber, field: .serialNumber)
 
-            // Menu Organisation Group
-            HStack {
-                Text("Organisation Group")
-                    .frame(width: 180, alignment: .leading)
-                    .foregroundColor(.primary)
-                Text("*")
-                    .foregroundColor(.red)
-                if organisationGroups.isEmpty {
-                    Text("Aucun groupe configuré")
-                        .foregroundColor(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                } else {
-                    menuPicker(
-                        options: organisationGroups,
-                        selectedId: $selectedOGId,
-                        placeholder: "Sélectionner l'OG de destination",
-                        displayText: { og in "\(og.name)  (\(og.groupId))" },
-                        onSelect: { og in
-                            selectedOGId = og.id
-                            locationGroupId = og.groupId
-                        }
-                    )
-                }
-                Spacer()
-            }
-            
             // Menu Enrollment Profile
             HStack {
                 Text("Enrollment Profile")
@@ -207,12 +181,48 @@ struct FormFieldsView: View {
                         options: enrollmentProfiles,
                         selectedId: $selectedProfileId,
                         placeholder: "Sélectionner un profil d'enrollement",
-                        displayText: { profile in profile.name },
+                        displayText: { profile in "\(profile.name) (OG: \(profile.organisationGroup.name))" },
                         onSelect: { profile in
                             selectedProfileId = profile.id
                             macEnrollmentProfile = profile.name
+                            // Sélectionner automatiquement le groupe d'organisation associé
+                            selectedOGId = profile.organisationGroup.id
+                            locationGroupId = profile.organisationGroup.groupId
                         }
                     )
+                }
+                Spacer()
+            }
+            
+            // Menu Organisation Group (maintenant en lecture seule, défini par le profil)
+            HStack {
+                Text("Organisation Group")
+                    .frame(width: 180, alignment: .leading)
+                    .foregroundColor(.secondary)
+                Text("*")
+                    .foregroundColor(.red)
+                if organisationGroups.isEmpty {
+                    Text("Aucun groupe configuré")
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                } else if let selectedProfile = enrollmentProfiles.first(where: { $0.id == selectedProfileId }) {
+                    HStack {
+                        Text("\(selectedProfile.organisationGroup.name)  (\(selectedProfile.organisationGroup.groupId))")
+                        Spacer()
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
+                    .cornerRadius(6)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6)
+                            .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                    )
+                } else {
+                    Text("Sélectionnez d'abord un profil")
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 Spacer()
             }
