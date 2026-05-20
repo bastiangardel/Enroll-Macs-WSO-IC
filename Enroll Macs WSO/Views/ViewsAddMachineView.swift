@@ -28,12 +28,20 @@ struct AddMachineView: View {
     @State private var selectedProfileId: UUID? = nil
     @State private var machineNamePrefixes: [MachineNamePrefix] = []
     @State private var selectedPrefixId: UUID? = nil
+    @State private var machineNameSuffixes: [MachineNameSuffix] = []
+    @State private var selectedSuffixId: UUID? = nil
     @State private var showConfirmation = false
     @FocusState private var focusedField: FormFieldsView.Field?
 
     private var friendlyName: String { 
         let prefix = machineNamePrefixes.first(where: { $0.id == selectedPrefixId })?.prefix ?? friendlyNamePrefix
-        return "\(prefix)-\(assetNumber)" 
+        let suffix = machineNameSuffixes.first(where: { $0.id == selectedSuffixId })?.suffix ?? ""
+        
+        if suffix.isEmpty {
+            return "\(prefix)-\(assetNumber)"
+        } else {
+            return "\(prefix)-\(assetNumber)-\(suffix)"
+        }
     }
 
     var body: some View {
@@ -64,6 +72,8 @@ struct AddMachineView: View {
                         selectedProfileId: $selectedProfileId,
                         machineNamePrefixes: $machineNamePrefixes,
                         selectedPrefixId: $selectedPrefixId,
+                        machineNameSuffixes: $machineNameSuffixes,
+                        selectedSuffixId: $selectedSuffixId,
                         focusedField: $focusedField
                     )
                 }
@@ -105,6 +115,12 @@ struct AddMachineView: View {
             organisationGroups = CoreDataService.shared.getOrganisationGroups()
             enrollmentProfiles = CoreDataService.shared.getEnrollmentProfiles()
             machineNamePrefixes = CoreDataService.shared.getMachineNamePrefixes()
+            machineNameSuffixes = CoreDataService.shared.getMachineNameSuffixes()
+            
+            // Si un seul suffixe est défini, le sélectionner par défaut
+            if machineNameSuffixes.count == 1, let onlySuffix = machineNameSuffixes.first {
+                selectedSuffixId = onlySuffix.id
+            }
         }
     }
     

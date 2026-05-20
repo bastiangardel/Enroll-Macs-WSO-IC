@@ -26,6 +26,8 @@ struct ConfigurationView: View {
     @State private var newProfileName: String = ""
     @State private var machineNamePrefixes: [MachineNamePrefix] = []
     @State private var newPrefixName: String = ""
+    @State private var machineNameSuffixes: [MachineNameSuffix] = []
+    @State private var newSuffixName: String = ""
 
     private var canSave: Bool {
         !pID.isEmpty && !OShip.isEmpty && !MT.isEmpty && !sPath.isEmpty && 
@@ -43,6 +45,8 @@ struct ConfigurationView: View {
                     enrollmentProfilesSection
                     Divider()
                     machineNamePrefixesSection
+                    Divider()
+                    machineNameSuffixesSection
                 }
                 .padding()
             }
@@ -225,6 +229,37 @@ struct ConfigurationView: View {
         }
     }
     
+    private var machineNameSuffixesSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Suffixes de noms de machines (optionnel)")
+                .font(.headline)
+            
+            Text("Les suffixes permettent de rendre les noms de machines uniques. Si aucun suffixe n'est sélectionné, le nom sera: PRÉFIXE-NUMÉRO_INVENTAIRE")
+                .font(.caption)
+                .foregroundColor(.secondary)
+
+            if !machineNameSuffixes.isEmpty {
+                tableHeader(columns: [("Suffixe", nil)])
+                Divider()
+                ForEach(machineNameSuffixes) { suffix in
+                    itemRow(
+                        primaryText: suffix.suffix,
+                        onDelete: { machineNameSuffixes.removeAll { $0.id == suffix.id } }
+                    )
+                }
+            }
+
+            HStack(spacing: 8) {
+                TextField("Suffixe (ex: 01, A, etc.)", text: $newSuffixName)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                Button("Ajouter") {
+                    addMachineNameSuffix()
+                }
+                .disabled(newSuffixName.trimmingCharacters(in: .whitespaces).isEmpty)
+            }
+        }
+    }
+    
     private var actionButtons: some View {
         VStack(spacing: 0) {
             HStack {
@@ -328,6 +363,12 @@ struct ConfigurationView: View {
                let prefixes = try? JSONDecoder().decode([MachineNamePrefix].self, from: data) {
                 machineNamePrefixes = prefixes
             }
+            
+            if let json = config.machineNameSuffixesJSON,
+               let data = json.data(using: .utf8),
+               let suffixes = try? JSONDecoder().decode([MachineNameSuffix].self, from: data) {
+                machineNameSuffixes = suffixes
+            }
         }
         
         sUsername = KeychainService.shared.getSambaUsername() ?? ""
@@ -355,6 +396,13 @@ struct ConfigurationView: View {
         } else {
             prefixesJSON = nil
         }
+        
+        let suffixesJSON: String?
+        if let data = try? JSONEncoder().encode(machineNameSuffixes) {
+            suffixesJSON = String(data: data, encoding: .utf8)
+        } else {
+            suffixesJSON = nil
+        }
 
         CoreDataService.shared.saveConfiguration(
             platformId: Int(pID) ?? 0,
@@ -365,7 +413,8 @@ struct ConfigurationView: View {
             ldapBaseDN: ldapBaseDN,
             organisationGroupsJSON: ogJSON,
             enrollmentProfilesJSON: profilesJSON,
-            machineNamePrefixesJSON: prefixesJSON
+            machineNamePrefixesJSON: prefixesJSON,
+            machineNameSuffixesJSON: suffixesJSON
         )
         
         // Sauvegarde les identifiants Samba dans une seule entrée du trousseau
@@ -392,6 +441,8 @@ struct ConfigurationView: View {
         newProfileName = ""
         machineNamePrefixes = []
         newPrefixName = ""
+        machineNameSuffixes = []
+        newSuffixName = ""
     }
     
     func handleCloseApp() {
@@ -428,5 +479,13 @@ struct ConfigurationView: View {
         )
         machineNamePrefixes.append(prefix)
         newPrefixName = ""
+    }
+    
+    func addMachineNameSuffix() {
+        let suffix = MachineNameSuffix(
+            suffix: newSuffixName.trimmingCharacters(in: .whitespaces)
+        )
+        machineNameSuffixes.append(suffix)
+        newSuffixName = ""
     }
 }

@@ -25,6 +25,8 @@ struct FormFieldsView: View {
     @Binding var selectedProfileId: UUID?
     @Binding var machineNamePrefixes: [MachineNamePrefix]
     @Binding var selectedPrefixId: UUID?
+    @Binding var machineNameSuffixes: [MachineNameSuffix]
+    @Binding var selectedSuffixId: UUID?
     @FocusState.Binding var focusedField: Field?
     var onLoadEmail: (() -> Void)?
     
@@ -88,10 +90,13 @@ struct FormFieldsView: View {
                         selectedId: $selectedPrefixId,
                         placeholder: "Sélectionner un préfixe…",
                         displayText: { prefix in
+                            let suffix = machineNameSuffixes.first(where: { $0.id == selectedSuffixId })?.suffix ?? ""
                             if assetNumber.isEmpty {
                                 return prefix.prefix
-                            } else {
+                            } else if suffix.isEmpty {
                                 return "\(prefix.prefix)-\(assetNumber)"
+                            } else {
+                                return "\(prefix.prefix)-\(assetNumber)-\(suffix)"
                             }
                         },
                         onSelect: { prefix in
@@ -104,6 +109,57 @@ struct FormFieldsView: View {
             }
             
             requiredField(label: "Numéro d'inventaire", text: $assetNumber, field: .assetNumber)
+            
+            // Menu Suffixe de nom de machine (optionnel)
+            HStack {
+                Text("Suffixe (optionnel)")
+                    .frame(width: 180, alignment: .leading)
+                    .foregroundColor(.primary)
+                if machineNameSuffixes.isEmpty {
+                    Text("Aucun suffixe configuré")
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                } else {
+                    Menu {
+                        Button("Aucun suffixe") {
+                            selectedSuffixId = nil
+                        }
+                        Divider()
+                        ForEach(machineNameSuffixes) { suffix in
+                            Button(suffix.suffix) {
+                                selectedSuffixId = suffix.id
+                            }
+                        }
+                    } label: {
+                        HStack {
+                            if let id = selectedSuffixId,
+                               let selected = machineNameSuffixes.first(where: { $0.id == id }) {
+                                Text(selected.suffix)
+                            } else {
+                                Text("Aucun suffixe")
+                                    .foregroundColor(.secondary)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.up.chevron.down")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color(NSColor.controlBackgroundColor))
+                        .cornerRadius(6)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 6)
+                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                Spacer()
+            }
+            
             requiredField(label: "Numéro de série", text: $serialNumber, field: .serialNumber)
 
             // Menu Organisation Group

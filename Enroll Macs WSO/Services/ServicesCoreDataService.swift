@@ -24,7 +24,8 @@ class CoreDataService {
         ldapBaseDN: String,
         organisationGroupsJSON: String? = nil,
         enrollmentProfilesJSON: String? = nil,
-        machineNamePrefixesJSON: String? = nil
+        machineNamePrefixesJSON: String? = nil,
+        machineNameSuffixesJSON: String? = nil
     ) {
         let context = PersistenceController.shared.container.viewContext
         
@@ -46,6 +47,7 @@ class CoreDataService {
         config.organisationGroupsJSON = organisationGroupsJSON
         config.enrollmentProfiles = enrollmentProfilesJSON
         config.machineNamePrefixesJSON = machineNamePrefixesJSON
+        config.machineNameSuffixesJSON = machineNameSuffixesJSON
 
         do {
             try context.save()
@@ -94,6 +96,7 @@ class CoreDataService {
         config.organisationGroupsJSON = nil
         config.enrollmentProfiles = nil
         config.machineNamePrefixesJSON = nil
+        config.machineNameSuffixesJSON = nil
         
         // Restaurer les machines
         config.machinesJSON = savedMachines
@@ -192,5 +195,16 @@ class CoreDataService {
               let prefixes = try? JSONDecoder().decode([MachineNamePrefix].self, from: data)
         else { return [] }
         return prefixes
+    }
+    
+    // MARK: - Machine Name Suffixes
+    
+    func getMachineNameSuffixes() -> [MachineNameSuffix] {
+        guard let config = getAppConfig(),
+              let json = config.machineNameSuffixesJSON,
+              let data = json.data(using: .utf8),
+              let suffixes = try? JSONDecoder().decode([MachineNameSuffix].self, from: data)
+        else { return [] }
+        return suffixes
     }
 }

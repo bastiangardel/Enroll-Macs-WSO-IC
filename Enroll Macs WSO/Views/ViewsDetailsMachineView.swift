@@ -30,13 +30,21 @@ struct DetailsMachineView: View {
     @State private var selectedProfileId: UUID? = nil
     @State private var machineNamePrefixes: [MachineNamePrefix] = []
     @State private var selectedPrefixId: UUID? = nil
+    @State private var machineNameSuffixes: [MachineNameSuffix] = []
+    @State private var selectedSuffixId: UUID? = nil
     @State private var showConfirmation = false
     @State private var shouldLoadEmailBeforeSave = false
     @FocusState private var focusedField: FormFieldsView.Field?
 
     private var friendlyName: String { 
         let prefix = machineNamePrefixes.first(where: { $0.id == selectedPrefixId })?.prefix ?? friendlyNamePrefix
-        return "\(prefix)-\(assetNumber)" 
+        let suffix = machineNameSuffixes.first(where: { $0.id == selectedSuffixId })?.suffix ?? ""
+        
+        if suffix.isEmpty {
+            return "\(prefix)-\(assetNumber)"
+        } else {
+            return "\(prefix)-\(assetNumber)-\(suffix)"
+        }
     }
 
     init(machine: Machine, onSave: @escaping (Machine) -> Void) {
@@ -78,6 +86,8 @@ struct DetailsMachineView: View {
                         selectedProfileId: $selectedProfileId,
                         machineNamePrefixes: $machineNamePrefixes,
                         selectedPrefixId: $selectedPrefixId,
+                        machineNameSuffixes: $machineNameSuffixes,
+                        selectedSuffixId: $selectedSuffixId,
                         focusedField: $focusedField,
                         onLoadEmail: {
                             // L'email a été chargé, on peut marquer qu'on n'a plus besoin de le charger
@@ -138,6 +148,7 @@ struct DetailsMachineView: View {
         organisationGroups = CoreDataService.shared.getOrganisationGroups()
         enrollmentProfiles = CoreDataService.shared.getEnrollmentProfiles()
         machineNamePrefixes = CoreDataService.shared.getMachineNamePrefixes()
+        machineNameSuffixes = CoreDataService.shared.getMachineNameSuffixes()
         
         // Pré-sélectionner l'OG correspondant
         if let matching = organisationGroups.first(where: { $0.groupId == machine.locationGroupId }) {
@@ -149,12 +160,19 @@ struct DetailsMachineView: View {
             selectedProfileId = matching.id
         }
         
-        // Pré-sélectionner le préfixe correspondant
+        // Pré-sélectionner le préfixe et le suffixe correspondants
         let components = machine.friendlyName.components(separatedBy: "-")
         if let firstComponent = components.first,
            let matching = machineNamePrefixes.first(where: { $0.prefix == firstComponent }) {
             selectedPrefixId = matching.id
             friendlyNamePrefix = matching.prefix
+        }
+        
+        // Si le nom contient 3 composants (préfixe-numéro-suffixe), extraire le suffixe
+        if components.count == 3,
+           let lastComponent = components.last,
+           let matching = machineNameSuffixes.first(where: { $0.suffix == lastComponent }) {
+            selectedSuffixId = matching.id
         }
     }
     
