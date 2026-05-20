@@ -277,7 +277,7 @@ struct ConfigurationView: View {
             Text("Suffixes de noms de machines (optionnel)")
                 .font(.headline)
             
-            Text("Les suffixes permettent de rendre les noms de machines uniques. Si aucun suffixe n'est sélectionné, le nom sera: PRÉFIXE-NUMÉRO_INVENTAIRE")
+            Text("Les suffixes permettent de rendre les noms de machines uniques. Si aucun suffixe n'est sélectionné, le nom sera: PRÉFIXE-NUMÉRO_INVENTAIRE. Avec un suffixe: PRÉFIXE-NUMÉRO_INVENTAIRESUFFIXE")
                 .font(.caption)
                 .foregroundColor(.secondary)
 

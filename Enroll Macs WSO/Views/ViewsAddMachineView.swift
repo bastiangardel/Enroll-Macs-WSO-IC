@@ -40,7 +40,7 @@ struct AddMachineView: View {
         if suffix.isEmpty {
             return "\(prefix)-\(assetNumber)"
         } else {
-            return "\(prefix)-\(assetNumber)-\(suffix)"
+            return "\(prefix)-\(assetNumber)\(suffix)"
         }
     }
 

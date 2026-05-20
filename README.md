@@ -230,7 +230,7 @@ Cliquez sur **Enregistrer** pour valider la configuration.
 
 **Note sur les noms de machines** :
 - Sans suffixe : `PRÉFIXE-NUMÉRO_INVENTAIRE` (exemple : `MAC-IT-12345`)
-- Avec suffixe : `PRÉFIXE-NUMÉRO_INVENTAIRE-SUFFIXE` (exemple : `MAC-IT-12345-01`)
+- Avec suffixe : `PRÉFIXE-NUMÉRO_INVENTAIRESUFFIXE` (exemple : `MAC-IT-1234501`)
 
 ### Envoyer les Machines
 
@@ -330,7 +330,7 @@ defaults write ch.epfl.Enroll-Macs-WSO-IC  isTestMode -bool false
 ]
 ```
 
-**Note** : Les suffixes sont optionnels et permettent de rendre les noms de machines uniques. Sans suffixe, le nom sera : `PRÉFIXE-NUMÉRO_INVENTAIRE`. Avec suffixe : `PRÉFIXE-NUMÉRO_INVENTAIRE-SUFFIXE`.
+**Note** : Les suffixes sont optionnels et permettent de rendre les noms de machines uniques. Sans suffixe, le nom sera : `PRÉFIXE-NUMÉRO_INVENTAIRE`. Avec suffixe : `PRÉFIXE-NUMÉRO_INVENTAIRESUFFIXE` (le suffixe est collé au numéro d'inventaire sans tiret).
 
 ### Configuration LDAP
 
@@ -490,7 +490,7 @@ Pour chaque machine, un fichier JSON individuel est créé avec le nom `{Friendl
 }
 ```
 
-**Exemple avec suffixe : `MAC-IT-12345-01.json`**
+**Exemple avec suffixe : `MAC-IT-1234501.json`**
 
 ```json
 {
@@ -500,7 +500,7 @@ Pour chaque machine, un fichier JSON individuel est créé avec le nom `{Friendl
   "MessageType": 1,
   "SerialNumber": "C02ABCD1234",
   "PlatformId": 1,
-  "FriendlyName": "MAC-IT-12345-01",
+  "FriendlyName": "MAC-IT-1234501",
   "Ownership": "Corporate",
   "MailAddress": "jdoe@domaine.ch",
   "MacEnrollmentProfile": "Standard macOS"
@@ -516,7 +516,7 @@ Pour chaque machine, un fichier JSON individuel est créé avec le nom `{Friendl
 - `PlatformId` : ID de la plateforme (configuré dans les paramètres généraux)
 - `FriendlyName` : Nom complet de la machine
   - Sans suffixe : `{Prefix}-{AssetNumber}` (ex: `MAC-IT-12345`)
-  - Avec suffixe : `{Prefix}-{AssetNumber}-{Suffix}` (ex: `MAC-IT-12345-01`)
+  - Avec suffixe : `{Prefix}-{AssetNumber}{Suffix}` (ex: `MAC-IT-1234501`) - **Le suffixe est collé au numéro d'inventaire**
 - `Ownership` : Type de propriété (configuré dans les paramètres généraux)
 - `MailAddress` : Adresse email de l'utilisateur
 - `MacEnrollmentProfile` : Profil d'enrôlement sélectionné
@@ -741,8 +741,8 @@ Les **suffixes** sont optionnels et permettent de rendre les noms de machines un
 - Exemple : `MAC-IT-12345`
 
 **Avec suffixe** :
-- Format : `PRÉFIXE-NUMÉRO_INVENTAIRE-SUFFIXE`
-- Exemple : `MAC-IT-12345-01` ou `MAC-IT-12345-A`
+- Format : `PRÉFIXE-NUMÉRO_INVENTAIRESUFFIXE` (le suffixe est collé au numéro d'inventaire)
+- Exemple : `MAC-IT-1234501` ou `MAC-IT-12345A`
 
 **Configuration** :
 1. Dans **Configuration**, ajoutez des suffixes dans la section "Suffixes de noms de machines (optionnel)"
@@ -795,7 +795,7 @@ Si vous aviez des profils existants sans groupe associé, l'application les migr
 En **mode production** :
 - Les fichiers sont envoyés vers le partage Samba configuré
 - Un fichier par machine : `{FriendlyName}.json`
-- Exemple : `MAC-IT-12345.json`, `MAC-RH-67890.json`
+- Exemple : `MAC-IT-12345.json`, `MAC-RH-67890A.json`
 
 En **mode test** :
 - Les fichiers sont sauvegardés dans `~/Downloads/TestStorage/`
@@ -892,13 +892,26 @@ Pour toute question, bug report ou demande de fonctionnalité :
 
 ---
 
-**Version** : 1.5  
+**Version** : 1.6  
 **Dernière mise à jour** : 20 mai 2026  
 **Statut** : ✅ Production Ready
 
 ---
 
 ## 📝 Changelog
+
+### Version 1.6 (20 mai 2026)
+
+**Améliorations** :
+- 🎨 **Format des noms de machines** : Le suffixe est maintenant collé au numéro d'inventaire sans tiret séparateur
+  - Ancien format : `PRÉFIXE-NUMÉRO-SUFFIXE` (ex: `MAC-IT-12345-01`)
+  - Nouveau format : `PRÉFIXE-NUMÉROSUFFIXE` (ex: `MAC-IT-1234501`)
+- 📝 Documentation mise à jour pour refléter le nouveau format
+
+**Avantages** :
+- ✅ Noms de machines plus compacts
+- ✅ Cohérence avec les conventions de nommage existantes
+- ✅ Meilleure lisibilité pour les suffixes courts (ex: `MAC-IT-12345A`)
 
 ### Version 1.5 (20 mai 2026)
 

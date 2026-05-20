@@ -43,7 +43,7 @@ struct DetailsMachineView: View {
         if suffix.isEmpty {
             return "\(prefix)-\(assetNumber)"
         } else {
-            return "\(prefix)-\(assetNumber)-\(suffix)"
+            return "\(prefix)-\(assetNumber)\(suffix)"
         }
     }
 
@@ -171,11 +171,17 @@ struct DetailsMachineView: View {
             friendlyNamePrefix = matching.prefix
         }
         
-        // Si le nom contient 3 composants (préfixe-numéro-suffixe), extraire le suffixe
-        if components.count == 3,
-           let lastComponent = components.last,
-           let matching = machineNameSuffixes.first(where: { $0.suffix == lastComponent }) {
-            selectedSuffixId = matching.id
+        // Si le nom contient au moins 2 composants (préfixe-numéro[suffixe]), essayer d'extraire le suffixe
+        // Le suffixe est maintenant collé au numéro d'inventaire
+        if components.count >= 2,
+           let assetAndSuffix = components.dropFirst().first {
+            // Essayer de trouver un suffixe qui correspond à la fin du composant
+            for suffix in machineNameSuffixes {
+                if assetAndSuffix.hasSuffix(suffix.suffix) {
+                    selectedSuffixId = suffix.id
+                    break
+                }
+            }
         }
     }
     

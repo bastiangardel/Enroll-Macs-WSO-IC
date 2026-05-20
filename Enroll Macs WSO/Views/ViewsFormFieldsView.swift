@@ -96,7 +96,7 @@ struct FormFieldsView: View {
                             } else if suffix.isEmpty {
                                 return "\(prefix.prefix)-\(assetNumber)"
                             } else {
-                                return "\(prefix.prefix)-\(assetNumber)-\(suffix)"
+                                return "\(prefix.prefix)-\(assetNumber)\(suffix)"
                             }
                         },
                         onSelect: { prefix in
