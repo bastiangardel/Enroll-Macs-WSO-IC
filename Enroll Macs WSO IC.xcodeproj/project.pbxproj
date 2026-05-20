@@ -8,11 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		95F52E232FB7175800406AB5 /* SMBClient in Frameworks */ = {isa = PBXBuildFile; productRef = 95F52E222FB7175800406AB5 /* SMBClient */; };
+		95F718812FB760F0004EAAC2 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 95F718802FB760F0004EAAC2 /* README.md */; };
 		95F718832FB76334004EAAC2 /* licence.txt in Resources */ = {isa = PBXBuildFile; fileRef = 95F718822FB76328004EAAC2 /* licence.txt */; };
 		AF076ACE2CEB964F00C53C39 /* SMBClient in Frameworks */ = {isa = PBXBuildFile; productRef = AF076ACD2CEB964F00C53C39 /* SMBClient */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		95F718802FB760F0004EAAC2 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		95F718822FB76328004EAAC2 /* licence.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = licence.txt; sourceTree = "<group>"; };
 		AFCB0F442CEB5CDD00E64EF9 /* Enroll Macs WSO IC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Enroll Macs WSO IC.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -44,6 +46,7 @@
 				95F718822FB76328004EAAC2 /* licence.txt */,
 				AFCB0F462CEB5CDD00E64EF9 /* Enroll Macs WSO */,
 				AFCB0F452CEB5CDD00E64EF9 /* Products */,
+				95F718802FB760F0004EAAC2 /* README.md */,
 			);
 			sourceTree = "<group>";
 		};
@@ -125,6 +128,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				95F718832FB76334004EAAC2 /* licence.txt in Resources */,
+				95F718812FB760F0004EAAC2 /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
