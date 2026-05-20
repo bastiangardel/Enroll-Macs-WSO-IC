@@ -62,8 +62,10 @@ L'application simplifie considérablement le processus d'enrôlement qui nécess
 ### Profils d'Enrôlement
 
 - **Organisation Groups** : Définition de groupes organisationnels WSO
-- **Enrollment Profiles** : Configuration de profils d'enrôlement personnalisés
+- **Enrollment Profiles** : Configuration de profils d'enrôlement personnalisés, **liés à un groupe d'organisation**
 - **Préfixes de noms** : Génération automatique de noms de machines cohérents
+- **Suffixes de noms (optionnel)** : Permet de rendre les noms de machines uniques avec un suffixe personnalisable
+- **Sélection automatique du groupe** : Le groupe d'organisation est automatiquement sélectionné lors du choix du profil
 - **Validation** : Vérification des données avant envoi
 
 ### Upload Automatique
@@ -195,9 +197,10 @@ Au premier lancement, l'application affiche l'écran de configuration :
    - Base DN (ex: `DC=domaine,DC=ch`)
 
 4. **Configuration des Profils** :
-   - **Organisation Groups** : Ajoutez vos groupes WSO
-   - **Enrollment Profiles** : Définissez vos profils d'enrôlement
+   - **Organisation Groups** : Ajoutez vos groupes WSO (nom + Group ID)
+   - **Enrollment Profiles** : Définissez vos profils d'enrôlement **et associez-les à un groupe d'organisation**
    - **Préfixes de Noms** : Configurez les préfixes de noms de machines
+   - **Suffixes de Noms (optionnel)** : Ajoutez des suffixes pour rendre les noms uniques
 
 Cliquez sur **Enregistrer** pour valider la configuration.
 
@@ -206,15 +209,17 @@ Cliquez sur **Enregistrer** pour valider la configuration.
 1. Cliquez sur **Ajouter une machine**
 2. Remplissez les champs :
    - **Username** : Nom d'utilisateur AD
-   - **Nom de la machine** : Sélectionnez un préfixe
+   - **Nom de la machine** : Sélectionnez un préfixe (exemple : `MAC-IT`)
    - **Numéro d'inventaire** : Asset number (utilisé pour le nom complet)
+   - **Suffixe (optionnel)** : Ajoutez un suffixe pour rendre le nom unique (exemple : `01`, `A`, etc.)
    - **Numéro de série** : Serial number du Mac
-   - **Organisation Group** : Groupe de destination WSO
-   - **Enrollment Profile** : Profil d'enrôlement à utiliser
-   - **Email** : Utilisez "Load email" pour récupérer automatiquement depuis AD
+   - **Enrollment Profile** : Profil d'enrôlement à utiliser (le groupe d'organisation est automatiquement sélectionné)
+   - **Organisation Group** : Affiché automatiquement selon le profil sélectionné (en lecture seule)
+   - **Email** : Chargé automatiquement lors de la perte de focus du champ username, ou via le bouton "Load email"
 3. Cliquez sur **Ajouter**
 4. Un popup de confirmation s'affiche avec :
    - Le **username** saisi
+   - L'**email** saisi
    - Le **SCIPER** récupéré automatiquement depuis l'AD (champ `company`)
    - Statut visuel du SCIPER avec icône :
      - ✅ **Vert** : SCIPER trouvé et valide
@@ -222,6 +227,10 @@ Cliquez sur **Enregistrer** pour valider la configuration.
      - ⚠️ **Orange** : Utilisateur non trouvé dans l'AD
      - ❌ **Rouge** : Erreur de connexion LDAP
 5. Validez ou annulez l'ajout dans le popup
+
+**Note sur les noms de machines** :
+- Sans suffixe : `PRÉFIXE-NUMÉRO_INVENTAIRE` (exemple : `MAC-IT-12345`)
+- Avec suffixe : `PRÉFIXE-NUMÉRO_INVENTAIRE-SUFFIXE` (exemple : `MAC-IT-12345-01`)
 
 ### Envoyer les Machines
 
@@ -273,13 +282,27 @@ defaults write ch.epfl.Enroll-Macs-WSO-IC  isTestMode -bool false
 ```json
 [
   {
-    "name": "Standard macOS"
+    "id": "uuid-string",
+    "name": "Standard macOS",
+    "organisationGroup": {
+      "id": "uuid-string",
+      "name": "Département IT",
+      "groupId": "IT-DEPT-001"
+    }
   },
   {
-    "name": "macOS Developer"
+    "id": "uuid-string",
+    "name": "macOS Developer",
+    "organisationGroup": {
+      "id": "uuid-string",
+      "name": "Département RH",
+      "groupId": "HR-DEPT-002"
+    }
   }
 ]
 ```
+
+**Note importante** : Chaque profil d'enrollment est désormais **lié à un groupe d'organisation**. Lors de la sélection d'un profil, le groupe associé est automatiquement sélectionné.
 
 #### Machine Name Prefixes
 
@@ -293,6 +316,21 @@ defaults write ch.epfl.Enroll-Macs-WSO-IC  isTestMode -bool false
   }
 ]
 ```
+
+#### Machine Name Suffixes (optionnel)
+
+```json
+[
+  {
+    "suffix": "01"
+  },
+  {
+    "suffix": "A"
+  }
+]
+```
+
+**Note** : Les suffixes sont optionnels et permettent de rendre les noms de machines uniques. Sans suffixe, le nom sera : `PRÉFIXE-NUMÉRO_INVENTAIRE`. Avec suffixe : `PRÉFIXE-NUMÉRO_INVENTAIRE-SUFFIXE`.
 
 ### Configuration LDAP
 
@@ -369,16 +407,32 @@ Utilisateur → ConfigurationView → CoreDataService.saveConfiguration()
 ```
 Utilisateur → AddMachineView
     ↓
-    ├─→ Button "Load email" → LDAPService.fetchEmail()
-    │                         → Process("/usr/bin/ldapsearch")
-    │                         → Parse LDAP output (attribut "mail")
-    │                         → email field updated
+    ├─→ Saisie du "Username" → Perte de focus (Tab ou clic ailleurs)
+    │                        → LDAPService.fetchEmail()
+    │                        → Process("/usr/bin/ldapsearch")
+    │                        → Parse LDAP output (attribut "mail")
+    │                        → email field updated automatiquement
+    │
+    ├─→ OU Button "Load email" → LDAPService.fetchEmail() (chargement manuel)
+    │                           → Process("/usr/bin/ldapsearch")
+    │                           → Parse LDAP output (attribut "mail")
+    │                           → email field updated
+    │
+    ├─→ Sélection du "Enrollment Profile" → Mise à jour automatique :
+    │                                      → macEnrollmentProfile updated
+    │                                      → selectedOGId updated
+    │                                      → locationGroupId updated
+    │                                      → Organisation Group en lecture seule
+    │
+    ├─→ Sélection du "Suffixe" (optionnel) → friendlyName updated
+    │                                       → Format: PRÉFIXE-INVENTAIRE-SUFFIXE
     ↓
     └─→ Button "Ajouter" → LDAPService.fetchSciper()
                          → Process("/usr/bin/ldapsearch")
                          → Parse LDAP output (attribut "company")
                          → ConfirmationDialogView affichée
                              ├─→ Username
+                             ├─→ Email
                              ├─→ SCIPER avec statut visuel :
                              │   ├─ ✅ found(String) : SCIPER trouvé
                              │   ├─ ➖ noAttribute : Pas de SCIPER configuré
@@ -436,14 +490,33 @@ Pour chaque machine, un fichier JSON individuel est créé avec le nom `{Friendl
 }
 ```
 
+**Exemple avec suffixe : `MAC-IT-12345-01.json`**
+
+```json
+{
+  "EndUserName": "jdoe",
+  "AssetNumber": "12345",
+  "LocationGroupId": "IT-DEPT-001",
+  "MessageType": 1,
+  "SerialNumber": "C02ABCD1234",
+  "PlatformId": 1,
+  "FriendlyName": "MAC-IT-12345-01",
+  "Ownership": "Corporate",
+  "MailAddress": "jdoe@domaine.ch",
+  "MacEnrollmentProfile": "Standard macOS"
+}
+```
+
 **Champs** :
 - `EndUserName` : Nom d'utilisateur Active Directory
 - `AssetNumber` : Numéro d'inventaire
-- `LocationGroupId` : ID du groupe organisationnel WSO
+- `LocationGroupId` : ID du groupe organisationnel WSO (défini par le profil d'enrollment)
 - `MessageType` : Type de message (configuré dans les paramètres généraux)
 - `SerialNumber` : Numéro de série du Mac
 - `PlatformId` : ID de la plateforme (configuré dans les paramètres généraux)
-- `FriendlyName` : Nom complet de la machine (`{Prefix}-{AssetNumber}`)
+- `FriendlyName` : Nom complet de la machine
+  - Sans suffixe : `{Prefix}-{AssetNumber}` (ex: `MAC-IT-12345`)
+  - Avec suffixe : `{Prefix}-{AssetNumber}-{Suffix}` (ex: `MAC-IT-12345-01`)
 - `Ownership` : Type de propriété (configuré dans les paramètres généraux)
 - `MailAddress` : Adresse email de l'utilisateur
 - `MacEnrollmentProfile` : Profil d'enrôlement sélectionné
@@ -503,8 +576,9 @@ Enroll Macs WSO/
 ├── 📦 Models/                                 # Modèles de données
 │   ├── ModelsMachine.swift                   # Modèle Machine
 │   ├── ModelsOrganisationGroup.swift         # Modèle OG
-│   ├── ModelsEnrollmentProfile.swift         # Modèle Profile
-│   └── ModelsMachineNamePrefix.swift         # Modèle Prefix
+│   ├── ModelsEnrollmentProfile.swift         # Modèle Profile (avec OG lié)
+│   ├── ModelsMachineNamePrefix.swift         # Modèle Prefix
+│   └── ModelsMachineNameSuffix.swift         # Modèle Suffix (optionnel)
 │
 ├── ⚙️ Services/                               # Logique métier
 │   ├── ServicesCoreDataService.swift         # Persistance Core Data
@@ -622,10 +696,13 @@ struct MachineTests {
 
 ### Comment récupérer les emails depuis LDAP ?
 
+L'application récupère automatiquement l'email lors de la perte de focus du champ username. Vous pouvez aussi le charger manuellement :
+
 1. Assurez-vous que le serveur LDAP est configuré dans l'app
 2. Dans le formulaire d'ajout, saisissez le username
-3. Cliquez sur **Load email**
-4. L'email est récupéré automatiquement depuis Active Directory (attribut `mail`)
+3. **L'email se charge automatiquement** lorsque vous passez au champ suivant (Tab ou clic ailleurs)
+4. Vous pouvez aussi cliquer sur **Load email** pour forcer le chargement
+5. L'email est récupéré automatiquement depuis Active Directory (attribut `mail`)
 
 **Résolution des problèmes** :
 - Vérifiez que `ldapsearch` est installé : `which ldapsearch`
@@ -654,6 +731,50 @@ Le **SCIPER** (identifiant unique EPFL) est récupéré automatiquement lors de 
    - **Annuler** : Revenir au formulaire pour corriger le username
 
 **Note** : Le SCIPER n'est pas stocké dans le fichier JSON d'enrôlement. Il sert uniquement à la validation visuelle pour s'assurer que le username est correct.
+
+### Comment fonctionnent les noms de machines avec suffixes ?
+
+Les **suffixes** sont optionnels et permettent de rendre les noms de machines uniques :
+
+**Sans suffixe** :
+- Format : `PRÉFIXE-NUMÉRO_INVENTAIRE`
+- Exemple : `MAC-IT-12345`
+
+**Avec suffixe** :
+- Format : `PRÉFIXE-NUMÉRO_INVENTAIRE-SUFFIXE`
+- Exemple : `MAC-IT-12345-01` ou `MAC-IT-12345-A`
+
+**Configuration** :
+1. Dans **Configuration**, ajoutez des suffixes dans la section "Suffixes de noms de machines (optionnel)"
+2. Lors de l'ajout d'une machine, sélectionnez un suffixe dans le menu déroulant
+3. Vous pouvez aussi choisir "Aucun suffixe"
+
+**Cas d'usage** :
+- Plusieurs machines avec le même numéro d'inventaire
+- Différenciation par emplacement (Étage 1 → `01`, Étage 2 → `02`)
+- Différenciation par utilisateur (User A → `A`, User B → `B`)
+
+### Comment fonctionnent les profils d'enrollment et groupes d'organisation ?
+
+Les **profils d'enrollment** sont désormais **liés à un groupe d'organisation** :
+
+**Workflow** :
+1. Créez d'abord vos **groupes d'organisation** (nom + Group ID)
+2. Créez ensuite vos **profils d'enrollment** et associez-les à un groupe
+3. Lors de l'ajout d'une machine :
+   - Sélectionnez le **profil d'enrollment**
+   - Le **groupe d'organisation** est automatiquement sélectionné (lecture seule)
+
+**Avantages** :
+- ✅ Moins d'erreurs (impossible de sélectionner un mauvais groupe)
+- ✅ Configuration plus simple et rapide
+- ✅ Cohérence garantie entre profil et groupe
+
+**Migration automatique** :
+Si vous aviez des profils existants sans groupe associé, l'application les migre automatiquement au premier lancement :
+- Les anciens profils sont associés au premier groupe d'organisation disponible
+- Un message de confirmation s'affiche dans la configuration
+- Vous pouvez ensuite modifier les associations si nécessaire
 
 ### L'upload Samba échoue, que faire ?
 
@@ -703,6 +824,10 @@ CoreDataService.shared.resetConfiguration()
   - Compte: Username Samba (kSecAttrAccount)
   - Mot de passe: Password Samba (kSecValueData)
 - **Machines en attente** : Core Data (JSON dans `AppConfig.machinesJSON`)
+- **Organisation Groups** : Core Data (JSON dans `AppConfig.organisationGroupsJSON`)
+- **Enrollment Profiles** : Core Data (JSON dans `AppConfig.enrollmentProfiles`, avec OG lié)
+- **Machine Name Prefixes** : Core Data (JSON dans `AppConfig.machineNamePrefixesJSON`)
+- **Machine Name Suffixes** : Core Data (JSON dans `AppConfig.machineNameSuffixesJSON`)
 - **Fichiers JSON générés** : 
   - Mode production → Partage Samba
   - Mode test → `~/Downloads/TestStorage/`
@@ -767,6 +892,37 @@ Pour toute question, bug report ou demande de fonctionnalité :
 
 ---
 
-**Version** : 1.4  
-**Dernière mise à jour** : 18 mai 2026  
+**Version** : 1.5  
+**Dernière mise à jour** : 20 mai 2026  
 **Statut** : ✅ Production Ready
+
+---
+
+## 📝 Changelog
+
+### Version 1.5 (20 mai 2026)
+
+**Nouvelles fonctionnalités** :
+- ✨ **Suffixes de noms de machines** : Ajout de suffixes optionnels pour rendre les noms uniques
+- ✨ **Liaison Profil-Groupe** : Les profils d'enrollment sont maintenant liés à un groupe d'organisation
+- ✨ **Chargement automatique email** : L'email se charge automatiquement lors de la perte de focus du champ username
+- ✨ **Migration automatique** : Les anciens profils sont automatiquement migrés avec un groupe associé
+
+**Améliorations UX** :
+- 🎨 Organisation Group en lecture seule (défini automatiquement par le profil)
+- 🎨 Affichage de l'email dans le popup de confirmation SCIPER
+- 🎨 Message de migration dans la configuration si nécessaire
+- 🎨 Meilleure organisation des menus déroulants
+
+**Corrections** :
+- 🐛 Correction du problème de sélection manuelle du groupe d'organisation
+- 🐛 Amélioration de la cohérence entre profil et groupe
+
+### Version 1.4 (18 mai 2026)
+
+**Fonctionnalités précédentes** :
+- Validation SCIPER avec popup de confirmation
+- Gestion native du Keychain avec APIs Security
+- Support LDAP pour récupération email et SCIPER
+- Upload Samba avec SMBClient
+- Mode test pour validation locale
