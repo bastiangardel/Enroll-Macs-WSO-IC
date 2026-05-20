@@ -27,7 +27,16 @@ class CoreDataService {
         machineNamePrefixesJSON: String? = nil
     ) {
         let context = PersistenceController.shared.container.viewContext
-        let config = AppConfig(context: context)
+        
+        // Récupérer la config existante ou en créer une nouvelle
+        let config: AppConfig
+        if let existingConfig = getAppConfig() {
+            config = existingConfig
+        } else {
+            config = AppConfig(context: context)
+        }
+        
+        // Mettre à jour les valeurs
         config.platformId = Int32(platformId)
         config.ownership = ownership
         config.messageType = Int32(messageType)
@@ -40,6 +49,7 @@ class CoreDataService {
 
         do {
             try context.save()
+            print("Configuration sauvegardée avec succès")
         } catch {
             print("Erreur lors de la sauvegarde des données dans Core Data: \(error)")
         }

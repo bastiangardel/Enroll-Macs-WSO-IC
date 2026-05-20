@@ -25,10 +25,51 @@ struct FormFieldsView: View {
     @Binding var selectedProfileId: UUID?
     @Binding var machineNamePrefixes: [MachineNamePrefix]
     @Binding var selectedPrefixId: UUID?
+    @FocusState.Binding var focusedField: Field?
+    var onLoadEmail: (() -> Void)?
+    
+    @State private var lastLoadedUsername: String = ""
+    
+    enum Field: Hashable {
+        case username
+        case assetNumber
+        case serialNumber
+        case email
+    }
     
     var body: some View {
         VStack(spacing: 10) {
-            requiredField(label: "Username", text: $endUserName)
+            HStack {
+                Text("Username ")
+                    .frame(width: 180, alignment: .leading)
+                    .foregroundColor(.primary)
+                Text("*")
+                    .foregroundColor(.red)
+                TextField("Entrez le username", text: $endUserName)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .focused($focusedField, equals: .username)
+                    .onSubmit {
+                        // Charger l'email automatiquement quand on appuie sur Enter
+                        if !endUserName.isEmpty && !isLoadingEmail {
+                            loadEmailFromLDAP()
+                        }
+                    }
+            }
+            .onChange(of: focusedField) { oldValue, newValue in
+                // Quand le champ username perd le focus
+                if oldValue == .username && newValue != .username {
+                    // Charger l'email seulement si le username a changé et n'est pas vide
+                    if !endUserName.isEmpty && endUserName != lastLoadedUsername && !isLoadingEmail {
+                        loadEmailFromLDAP()
+                    }
+                }
+            }
+            .onChange(of: endUserName) { oldValue, newValue in
+                // Réinitialiser le message LDAP quand on modifie le username
+                if oldValue != newValue {
+                    ldapMessage = ""
+                }
+            }
             
             // Menu Préfixe de nom de machine
             HStack {
@@ -62,8 +103,8 @@ struct FormFieldsView: View {
                 Spacer()
             }
             
-            requiredField(label: "Numéro d'inventaire", text: $assetNumber)
-            requiredField(label: "Numéro de série", text: $serialNumber)
+            requiredField(label: "Numéro d'inventaire", text: $assetNumber, field: .assetNumber)
+            requiredField(label: "Numéro de série", text: $serialNumber, field: .serialNumber)
 
             // Menu Organisation Group
             HStack {
@@ -126,6 +167,7 @@ struct FormFieldsView: View {
                     .foregroundColor(.red)
                 TextField("Entrez l'email", text: $email)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .focused($focusedField, equals: .email)
                 Button(action: loadEmailFromLDAP) {
                     if isLoadingEmail {
                         ProgressView().controlSize(.small)
@@ -147,7 +189,7 @@ struct FormFieldsView: View {
     }
     
     @ViewBuilder
-    private func requiredField(label: String, text: Binding<String>) -> some View {
+    private func requiredField(label: String, text: Binding<String>, field: Field) -> some View {
         HStack {
             Text("\(label) ")
                 .frame(width: 180, alignment: .leading)
@@ -156,6 +198,7 @@ struct FormFieldsView: View {
                 .foregroundColor(.red)
             TextField("Entrez le \(label.lowercased())", text: text)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
+                .focused($focusedField, equals: field)
         }
     }
     
@@ -208,6 +251,7 @@ struct FormFieldsView: View {
     private func loadEmailFromLDAP() {
         isLoadingEmail = true
         ldapMessage = ""
+        lastLoadedUsername = endUserName
         
         LDAPService.shared.fetchEmail(username: endUserName) { result in
             isLoadingEmail = false
@@ -225,6 +269,13 @@ struct FormFieldsView: View {
                 email = ""
                 ldapMessage = "Erreur lors de la recherche LDAP."
             }
+            // Notifier le parent si un callback est fourni
+            onLoadEmail?()
         }
+    }
+    
+    // Méthode pour vérifier si l'email doit être rechargé
+    func shouldReloadEmail() -> Bool {
+        return !endUserName.isEmpty && endUserName != lastLoadedUsername
     }
 }

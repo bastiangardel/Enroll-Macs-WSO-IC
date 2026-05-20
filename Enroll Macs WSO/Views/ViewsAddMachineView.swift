@@ -29,6 +29,7 @@ struct AddMachineView: View {
     @State private var machineNamePrefixes: [MachineNamePrefix] = []
     @State private var selectedPrefixId: UUID? = nil
     @State private var showConfirmation = false
+    @FocusState private var focusedField: FormFieldsView.Field?
 
     private var friendlyName: String { 
         let prefix = machineNamePrefixes.first(where: { $0.id == selectedPrefixId })?.prefix ?? friendlyNamePrefix
@@ -36,46 +37,56 @@ struct AddMachineView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            VStack(spacing: 10) {
-                FormFieldsView(
-                    endUserName: $endUserName,
-                    assetNumber: $assetNumber,
-                    serialNumber: $serialNumber,
-                    locationGroupId: $locationGroupId,
-                    email: $email,
-                    sciper: $sciper,
-                    macEnrollmentProfile: $macEnrollmentProfile,
-                    friendlyNamePrefix: $friendlyNamePrefix,
-                    isLoadingEmail: $isLoadingEmail,
-                    ldapMessage: $ldapMessage,
-                    organisationGroups: $organisationGroups,
-                    selectedOGId: $selectedOGId,
-                    enrollmentProfiles: $enrollmentProfiles,
-                    selectedProfileId: $selectedProfileId,
-                    machineNamePrefixes: $machineNamePrefixes,
-                    selectedPrefixId: $selectedPrefixId
-                )
-            }
-            .padding(.horizontal)
-            .padding(.top, 8)
+        ZStack {
+            // Zone cliquable en arrière-plan pour enlever le focus
+            Color.clear
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    focusedField = nil
+                }
             
-            HStack {
-                Button("Ajouter") {
-                    loadSciperAndShowConfirmation()
+            VStack(alignment: .leading, spacing: 0) {
+                VStack(spacing: 10) {
+                    FormFieldsView(
+                        endUserName: $endUserName,
+                        assetNumber: $assetNumber,
+                        serialNumber: $serialNumber,
+                        locationGroupId: $locationGroupId,
+                        email: $email,
+                        sciper: $sciper,
+                        macEnrollmentProfile: $macEnrollmentProfile,
+                        friendlyNamePrefix: $friendlyNamePrefix,
+                        isLoadingEmail: $isLoadingEmail,
+                        ldapMessage: $ldapMessage,
+                        organisationGroups: $organisationGroups,
+                        selectedOGId: $selectedOGId,
+                        enrollmentProfiles: $enrollmentProfiles,
+                        selectedProfileId: $selectedProfileId,
+                        machineNamePrefixes: $machineNamePrefixes,
+                        selectedPrefixId: $selectedPrefixId,
+                        focusedField: $focusedField
+                    )
                 }
-                .disabled(!isFormValid || isLoadingEmail)
-                .buttonStyle(.borderedProminent)
+                .padding(.horizontal)
+                .padding(.top, 8)
+                
+                HStack {
+                    Button("Ajouter") {
+                        loadSciperAndShowConfirmation()
+                    }
+                    .disabled(!isFormValid || isLoadingEmail)
+                    .buttonStyle(.borderedProminent)
 
-                Button("Annuler") {
-                    dismiss()
+                    Button("Annuler") {
+                        dismiss()
+                    }
+                    .buttonStyle(.bordered)
                 }
-                .buttonStyle(.bordered)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal)
+                .padding(.top, 16)
+                .padding(.bottom, 8)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.horizontal)
-            .padding(.top, 16)
-            .padding(.bottom, 8)
         }
         .sheet(isPresented: $showConfirmation) {
             ConfirmationDialogView(
