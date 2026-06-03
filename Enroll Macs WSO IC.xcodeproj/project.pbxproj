@@ -43,10 +43,10 @@
 		AFCB0F3B2CEB5CDD00E64EF9 = {
 			isa = PBXGroup;
 			children = (
+				95F718802FB760F0004EAAC2 /* README.md */,
 				95F718822FB76328004EAAC2 /* licence.txt */,
 				AFCB0F462CEB5CDD00E64EF9 /* Enroll Macs WSO */,
 				AFCB0F452CEB5CDD00E64EF9 /* Products */,
-				95F718802FB760F0004EAAC2 /* README.md */,
 			);
 			sourceTree = "<group>";
 		};
@@ -298,7 +298,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.6;
+				MARKETING_VERSION = 1.7;
 				PRODUCT_BUNDLE_IDENTIFIER = "ch.epfl.Enroll-Macs-WSO-IC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
@@ -343,7 +343,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.6;
+				MARKETING_VERSION = 1.7;
 				PRODUCT_BUNDLE_IDENTIFIER = "ch.epfl.Enroll-Macs-WSO-IC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;

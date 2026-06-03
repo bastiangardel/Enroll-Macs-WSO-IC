@@ -892,13 +892,29 @@ Pour toute question, bug report ou demande de fonctionnalité :
 
 ---
 
-**Version** : 1.6  
-**Dernière mise à jour** : 20 mai 2026  
+**Version** : 1.7  
+**Dernière mise à jour** : 03 juin 2026  
 **Statut** : ✅ Production Ready
 
 ---
 
 ## 📝 Changelog
+
+### Version 1.7 (03 juin 2026)
+
+**Améliorations UX** :
+- 🔤 **Tri alphabétique des menus déroulants** : Tous les menus déroulants sont maintenant triés par ordre alphabétique insensible à la casse
+  - Préfixes de noms de machines triés alphabétiquement
+  - Suffixes de noms de machines triés alphabétiquement
+  - Profils d'enrollment triés alphabétiquement
+  - Groupes d'organisation triés alphabétiquement
+- ✨ **Tri intelligent** : Utilisation de `localizedCaseInsensitiveCompare` pour un tri naturel respectant les caractères accentués
+
+**Avantages** :
+- ✅ Meilleure lisibilité des listes déroulantes
+- ✅ Recherche visuelle plus rapide dans les menus
+- ✅ Tri cohérent quel que soit l'ordre d'ajout des éléments
+- ✅ Support complet des caractères accentués et spéciaux
 
 ### Version 1.6 (20 mai 2026)
 

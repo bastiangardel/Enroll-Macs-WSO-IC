@@ -128,7 +128,7 @@ struct FormFieldsView: View {
                             selectedSuffixId = nil
                         }
                         Divider()
-                        ForEach(machineNameSuffixes) { suffix in
+                        ForEach(machineNameSuffixes.sorted(by: { $0.suffix.localizedCaseInsensitiveCompare($1.suffix) == .orderedAscending })) { suffix in
                             Button(suffix.suffix) {
                                 selectedSuffixId = suffix.id
                             }
@@ -284,7 +284,7 @@ struct FormFieldsView: View {
                 selectedId.wrappedValue = nil
             }
             Divider()
-            ForEach(options) { option in
+            ForEach(options.sorted(by: { displayText($0).localizedCaseInsensitiveCompare(displayText($1)) == .orderedAscending })) { option in
                 Button(displayText(option)) {
                     onSelect(option)
                 }

@@ -221,7 +221,7 @@ struct ConfigurationView: View {
                 
                 Picker("Groupe", selection: $selectedOGForNewProfile) {
                     Text("Sélectionner un groupe").tag(nil as OrganisationGroup?)
-                    ForEach(organisationGroups) { og in
+                    ForEach(organisationGroups.sorted(by: { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending })) { og in
                         Text(og.name).tag(og as OrganisationGroup?)
                     }
                 }
